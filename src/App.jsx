@@ -62,6 +62,7 @@ function App() {
 
     // ─── Cross-Tab Actions ───
     const [createMode, setCreateMode] = useState(false)
+    const [squadEnabled, setSquadEnabled] = useState(false)
     const [activeConvoy, setActiveConvoy] = useState(null)
     const [initialSquadMembers, setInitialSquadMembers] = useState([])
     const [initialSquadRoute, setInitialSquadRoute] = useState(null)
@@ -114,7 +115,7 @@ function App() {
 
     // ...
 
-    const [squadEnabled, setSquadEnabled] = useState(false)
+
 
     const renderContent = () => {
         switch (activeTab) {
