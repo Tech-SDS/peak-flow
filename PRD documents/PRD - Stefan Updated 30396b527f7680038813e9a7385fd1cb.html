@@ -1,0 +1,713 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>PRD - Stefan Updated </title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="30396b52-7f76-8003-8813-e9a7385fd1cb" class="page sans"><header><h1 class="page-title" dir="auto">PRD - Stefan Updated </h1><p class="page-description" dir="auto"></p></header><div class="page-body"><div style="display:contents" dir="ltr"><figure id="30496b52-7f76-80a6-8495-eb62781b345b"><div class="source"><a href="Results_-_Convoy_and_Explorer_Discovery__Priotization.pdf">Results - Convoy and Explorer Discovery &amp; Priotization.pdf</a></div></figure></div><div style="display:contents" dir="auto"><p id="115c366b-b65b-4ab3-9095-fcf27ce352c3" class="">This is <strong>Peak Flow: Definitive System Specification (v13.0)</strong>.</p></div><div style="display:contents" dir="auto"><p id="f31ee9db-e5af-4594-9f25-1340ea59e8ad" class="">This version strictly preserves the technical density of your previous PRD (v11.0)—including the specific logic for &quot;Nearby Me&quot; radius expansion, &quot;Spider-Leg&quot; clustering, and the &quot;Chassis Threat&quot; lists—while applying the two requested research-centric changes:</p></div><div style="display:contents" dir="auto"><ol type="1" id="32f3e0ac-cd36-4d5d-8b32-bf522fa09262" class="numbered-list" start="1"><li><strong>Map-Centric Discovery:</strong> The Home Screen is now the Interactive Map with overlaid Search and Creation CTAs.</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="f33b0463-67d1-48cd-bb60-454b962c4fba" class="numbered-list" start="2"><li><strong>Consolidated Library:</strong> &quot;Performance&quot; is now a sub-feature within Tab 3.</li></ol></div><div style="display:contents" dir="auto"><hr id="6242f64c-1489-468f-8534-ea33133f214a"/></div><div style="display:contents" dir="auto"><h1 id="bce3a82c-aead-442d-80f5-e310f6b2b35c" class="">Peak Flow: Definitive System Specification (v13.0)</h1></div><div style="display:contents" dir="auto"><h2 id="f7501742-5e91-4be5-940e-66062d27ce5e" class="">Platform  Strategy &amp; Architecture</h2></div><div style="display:contents" dir="auto"><p id="b139c981-ce9f-4349-aaa1-4930cca12165" class="">To ensure a seamless &quot;Fluid-Sync&quot; experience, the system is split into two distinct execution environments:</p></div><div style="display:contents" dir="auto"><ul id="b8853532-e98e-45da-9ac6-2074321b31cd" class="bulleted-list"><li style="list-style-type:disc"><strong>Platform A: Mobile App (iOS + CarPlay):</strong> The &quot;Planning &amp; Social&quot; layer. Handles cloud-heavy tasks, AI generation, and standard navigation via CarPlay.</li></ul></div><div style="display:contents" dir="auto"><ul id="40645344-08d0-48e4-bf7c-581b4cfee234" class="bulleted-list"><li style="list-style-type:disc"><strong>Platform B: Native OEM (Vehicle Head-Unit):</strong> The &quot;Tactical &amp; Telemetry&quot; layer. Handles deep vehicle integration (CAN-bus), Spatial Audio processing, and high-performance navigation (<strong>TomTom Orbis Native SDK</strong>).</li></ul></div><div style="display:contents" dir="auto"><hr id="23261fa3-b137-4a22-ba18-642468039b21"/></div><div style="display:contents" dir="auto"><h2 id="09cddee3-3454-4058-a4b6-e4287739084c" class="">1. Information Architecture &amp; Navigation</h2></div><div style="display:contents" dir="auto"><p id="73ae4434-5cdb-48ca-baa4-5633f95cf9af" class="">The mobile interface is designed for high-end aesthetic appeal, using a Glassmorphism and a &quot;dark-mode&quot; first approach to reduce cognitive load during the transition from device to vehicle.</p></div><div style="display:contents" dir="auto"><ul id="7a727bd7-bd0d-42b2-9dbd-9fdd43eb54be" class="bulleted-list"><li style="list-style-type:disc"><strong>Tab 1: Discover</strong> – The map-centric entry point for finding the next &quot;Escape.&quot;</li></ul></div><div style="display:contents" dir="auto"><ul id="0aab3425-5571-4f94-8290-e9518036c089" class="bulleted-list"><li style="list-style-type:disc"><strong>Tab 2: Squad</strong> – Social lobby and Radar discovery (Transitions to Convoy Mode).</li></ul></div><div style="display:contents" dir="auto"><ul id="b661a83e-af76-4906-b079-cfd248b3116f" class="bulleted-list"><li style="list-style-type:disc"><strong>Tab 3: Library</strong> – Personal archive containing <strong>Trips</strong> (History &amp; Performance), <strong>Favorites</strong>, and <strong>Wishlist</strong>.</li></ul></div><div style="display:contents" dir="auto"><ul id="97486b1b-d7b3-43c6-882e-556324f9c751" class="bulleted-list"><li style="list-style-type:disc"><strong>Tab 4: Profile</strong> – Vehicle settings and &quot;Verified Pilot&quot; status.</li></ul></div><div style="display:contents" dir="auto"><hr id="2a5af149-15a2-4fda-a8ba-ef7a3bee12d8"/></div><div style="display:contents" dir="auto"><h2 id="a841e27d-0292-434c-8a25-7c0465ae41ff" class="">2. Epic 1: Explorer (Discovery &amp; Social)</h2></div><div style="display:contents" dir="auto"><h3 id="19556bdd-37e5-4008-b7d7-1295f1299d6a" class="">2.1 Discovery Start Page Structure (Map-Centric)</h3></div><div style="display:contents" dir="auto"><p id="69fb8720-7f98-48f3-90c3-c52f5159ff26" class="">The Discover tab has been reorganized to prioritize spatial context. The <strong>Interactive Map</strong> is now the primary background canvas, with Search and Inspiration acting as functional overlays.</p></div><div style="display:contents" dir="auto"><h3 id="318de202-1e57-4208-afc1-39d1dd8db152" class=""><strong>A. The Canvas: Interactive Map Portal</strong></h3></div><div style="display:contents" dir="auto"><ul id="156a0347-ed49-44fb-b2b4-234a6c559594" class="bulleted-list"><li style="list-style-type:disc"><strong>Interaction:</strong> The map occupies the full screen  immediately upon load.</li></ul></div><div style="display:contents" dir="auto"><ul id="a55aef13-62b0-41e8-8111-378b33095d22" class="bulleted-list"><li style="list-style-type:disc"><strong>Visuals:</strong> Renders &quot;Apex Orange&quot; route ribbons in the user&#x27;s vicinity.</li></ul></div><div style="display:contents" dir="auto"><ul id="af940242-500d-4095-8b0e-3e90566a529d" class="bulleted-list"><li style="list-style-type:disc"><strong>Map Gestures:</strong><div style="display:contents" dir="auto"><ul id="a2e646f1-e706-4fe4-a791-c701e48d2c7f" class="bulleted-list"><li style="list-style-type:circle"><strong>Line-Tap:</strong> Tapping a route ribbon directly on the map triggers the <strong>Route Summary Bottom Sheet</strong>.</li></ul></div><div style="display:contents" dir="auto"><ul id="a07c699a-3ba2-44c6-9848-fdbd832594d6" class="bulleted-list"><li style="list-style-type:circle"><strong>Clustering:</strong> If routes are geographically overlapping, a single tap triggers a <strong>&quot;Spider-Leg&quot; expansion</strong> or zoom-in; a second tap selects the specific line.</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><h3 id="2df2476c-8d6d-4159-8408-774177dd37df" class=""><strong>B. Top Overlay: Search &amp; Creation</strong></h3></div><div style="display:contents" dir="auto"><p id="3c6c83d1-9653-4c4f-bdd3-fddee17fdf2a" class=""><em>Floating at the top of the Map Canvas.</em></p></div><div style="display:contents" dir="auto"><ol type="1" id="78acf484-8b77-4805-9175-045a4e0b6196" class="numbered-list" start="1"><li><strong>Omni-Search Bar:</strong><div style="display:contents" dir="auto"><ul id="f60e36f2-4952-449f-96c7-2fdab4eba522" class="bulleted-list"><li style="list-style-type:disc"><strong>Search Logic:</strong> Queries the curated route library by name, region, or POI.</li></ul></div><div style="display:contents" dir="auto"><ul id="9b3783ae-4225-46e9-8986-1f93c2a6d247" class="bulleted-list"><li style="list-style-type:disc"><strong>Real-time Suggestions:</strong> Displays a maximum of 3 &quot;Recent&quot; searches and 5 &quot;Predicted Locations/Routes&quot; as the user types.</li></ul></div><div style="display:contents" dir="auto"><ul id="f9b7843d-3873-4c68-a581-f1a85a65d7a8" class="bulleted-list"><li style="list-style-type:disc"><strong>The &quot;Empty State&quot; Pivot:</strong> If no search results match, the system displays a high-prominence CTA: <em>“No routes found. Create your own route.”</em></li></ul></div></li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="259ce8a7-2d41-427e-8696-9ef3c707baa2" class="numbered-list" start="2"><li><strong>Creation CTAs:</strong> Two distinct buttons positioned immediately below the Search Bar:<div style="display:contents" dir="auto"><ul id="1c6e2783-e4e8-4926-933f-f2b796de18b2" class="bulleted-list"><li style="list-style-type:disc"><strong>&quot;Manual Plan&quot;:</strong> Launches the Draftsman tool.</li></ul></div><div style="display:contents" dir="auto"><ul id="080e5555-b301-4e81-a7ec-069c4d886679" class="bulleted-list"><li style="list-style-type:disc"><strong>&quot;Auto Create&quot;:</strong> Launches the AI Architect.</li></ul></div></li></ol></div><div style="display:contents" dir="auto"><h3 id="a70181cb-0348-4194-a38b-5183aee3df4a" class=""><strong>C. Bottom Overlay: Categorized Inspiration (Scrollable Stacks)</strong></h3></div><div style="display:contents" dir="auto"><p id="f0edc616-d4f1-43a2-b6d2-e117e7bec963" class=""><em>Horizontal scrollable containers located at the bottom of the screen, overlaying the map.</em></p></div><div style="display:contents" dir="auto"><ol type="1" id="5d89376e-e508-4dfc-b988-b086511606d0" class="numbered-list" start="1"><li><strong>&quot;Nearby Me&quot;:</strong><div style="display:contents" dir="auto"><ul id="e18a3b2d-3053-419b-9efb-c8af89ca50a9" class="bulleted-list"><li style="list-style-type:disc"><strong>Logic:</strong> Initially queries routes within a <strong>25km radius</strong>.</li></ul></div><div style="display:contents" dir="auto"><ul id="18fdd7bb-6742-4e81-950a-2e6913a6f217" class="bulleted-list"><li style="list-style-type:disc"><strong>Expansion Logic:</strong> If result count &lt; 3, automatically expand radius in increments up to <strong>300km</strong>.</li></ul></div><div style="display:contents" dir="auto"><ul id="474ebb46-4129-4d54-abfb-36d55e328d07" class="bulleted-list"><li style="list-style-type:disc"><strong>Fallthrough:</strong> If no routes exist within 300km, replace the stack with a wide-format CTA card: <em>“Nothing nearby. Be a pioneer and create a route.”</em></li></ul></div></li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="3f8337bc-a030-4e1a-bbe5-9192da68548c" class="numbered-list" start="2"><li><strong>&quot;Themes&quot;:</strong><div style="display:contents" dir="auto"><ul id="944f7920-fa55-4648-8b48-5c9d1c4cdbf9" class="bulleted-list"><li style="list-style-type:disc"><strong>Relaxed:</strong> (High SSS, Scenic).</li></ul></div><div style="display:contents" dir="auto"><ul id="5107db0c-410c-40ab-a9ac-30dbe26b539c" class="bulleted-list"><li style="list-style-type:disc"><strong>Deep Flow:</strong> (Technical, High Curviness Index).</li></ul></div></li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="43e05178-9aa3-4270-8b59-6a4aba95a961" class="numbered-list" start="3"><li><strong>&quot;Time-Based&quot;:</strong><div style="display:contents" dir="auto"><ul id="a36fe490-86c0-4cfe-b0b1-fa92130e40e2" class="bulleted-list"><li style="list-style-type:disc">The Quick Escape: (30m).</li></ul></div><div style="display:contents" dir="auto"><ul id="7fb755a7-1cd5-4550-acea-cea0493aae95" class="bulleted-list"><li style="list-style-type:disc">The Sprint: (1h).</li></ul></div><div style="display:contents" dir="auto"><ul id="d8206afe-9400-4160-93fd-06b1cbfd0cbf" class="bulleted-list"><li style="list-style-type:disc">The Odyssey: (4h+).</li></ul></div></li></ol></div><div style="display:contents" dir="auto"><ul id="53adffe0-2357-4407-bdf2-59318fa04ab3" class="bulleted-list"><li style="list-style-type:disc"><strong>UX Interaction:</strong> Category Title Click opens a Vertical List View. Route Card Click opens the Route Summary Bottom Sheet.</li></ul></div><div style="display:contents" dir="auto"><h3 id="018a24d2-93bf-4d75-a43d-a400d260a42b" class="">2.2 List View: Sorting &amp; Filtering Logic</h3></div><div style="display:contents" dir="auto"><p id="e8d511fa-5440-415e-83dc-350a553e3776" class=""><em>Applicable to Search Results and Expanded Categories.</em></p></div><div style="display:contents" dir="auto"><h3 id="4c8ebafd-e70f-42b0-82ad-98481c302eb0" class=""><strong>2.2.1 Sorting (&quot;Soft&quot; Boundary)</strong></h3></div><div style="display:contents" dir="auto"><ul id="7f8bb73d-9c58-48a1-8cc0-575f387e87a9" class="bulleted-list"><li style="list-style-type:disc"><strong>Default (Search):</strong> &quot;Relevance&quot; (weighted by proximity to current GPS and keyword match).</li></ul></div><div style="display:contents" dir="auto"><ul id="9ed0b63f-8c58-4895-a557-8cd2597d13b9" class="bulleted-list"><li style="list-style-type:disc"><strong>Default (Category):</strong> &quot;Distance&quot; (Absolute distance to the start point).</li></ul></div><div style="display:contents" dir="auto"><h3 id="06cf9710-c755-4421-ab44-7bc9752ce379" class=""><strong>2.2.2 Filtering (&quot;Hard&quot; Boundary)</strong></h3></div><div style="display:contents" dir="auto"><p id="53217df9-f366-4d05-9b4b-cdfb93b2fcad" class="">Filters strictly exclude routes that do not meet chosen criteria.</p></div><div style="display:contents" dir="auto"><ul id="a62d18f9-a728-4d0b-a599-67deeccbed4e" class="bulleted-list"><li style="list-style-type:disc"><strong>Quick-Access Pills:</strong> Horizontal scroll of buttons (e.g., &quot;SSS &gt; 9&quot;, &quot;Curvy&quot;, &quot;&lt; 1 Hour&quot;).</li></ul></div><div style="display:contents" dir="auto"><ul id="aa1a669c-0dba-4b33-8415-d7e2cf662135" class="bulleted-list"><li style="list-style-type:disc"><strong>The &quot;Flow Filter&quot; Sheet:</strong> A bottom-drawer UI for complex combinations.<div style="display:contents" dir="auto"><ul id="d3bc2e0b-a9a9-4b08-bfe4-a986cf911733" class="bulleted-list"><li style="list-style-type:circle"><strong>SSS Threshold:</strong> Slider ranging from 1.0 to 10.0 (e.g., &quot;Only show SSS 8+&quot;).</li></ul></div><div style="display:contents" dir="auto"><ul id="d0bb223a-d082-4848-98e4-863be83ac311" class="bulleted-list"><li style="list-style-type:circle"><strong>Atmosphere:</strong> Multi-select chips (Alpine, Coastal, Forest, Industrial).</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><h3 id="e09c6bf6-1585-46c0-b54f-148e5243c47e" class="">2.3 The Route Evaluation Hierarchy (Overview &amp; Details)</h3></div><div style="display:contents" dir="auto"><p id="ec453885-9add-4a0d-bcc9-950c13c59c62" class="">To maintain a low cognitive load, the system uses a progressive disclosure model. Selection of a route triggers the <strong>&quot;Handshake&quot; Animation</strong>: the background map executes a &quot;Fly-to&quot; to center the route polyline while the evaluation UI slides up.</p></div><div style="display:contents" dir="auto"><h3 id="4d988d7b-1742-4b6a-af3d-b46a600e81fd" class=""><strong>2.3.1 Layer 1: The Route Overview (The &quot;Hook&quot;)</strong></h3></div><div style="display:contents" dir="auto"><p id="b1669a17-5f47-4aa5-abe6-b4fff40ec917" class=""><strong>UI Component:</strong> Bottom Sheet (40% Screen Height).</p></div><div style="display:contents" dir="auto"><ul id="2e0fdb69-d3fd-40e3-b09f-ef3fcea81bc1" class="bulleted-list"><li style="list-style-type:disc"><strong>Visual Header:</strong> A high-resolution hero image (Logic: Waypoint → Destination → Generic Atmosphere).</li></ul></div><div style="display:contents" dir="auto"><ul id="9674e0e7-327c-4d9f-a373-8ba705afc817" class="bulleted-list"><li style="list-style-type:disc"><strong>Primary Identity:</strong><div style="display:contents" dir="auto"><ul id="ad2fc2f5-da0a-45c9-bfbb-6758c0371e75" class="bulleted-list"><li style="list-style-type:circle"><strong>Title:</strong> Bold, high-contrast typography (e.g., <em>&quot;The Black Forest Hairpins&quot;</em>).</li></ul></div><div style="display:contents" dir="auto"><ul id="2ed13e11-d35f-40ad-a763-120d8be74e92" class="bulleted-list"><li style="list-style-type:circle"><strong>Author:</strong> Verified Pilot name or &quot;Peak Flow Curated.&quot;</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="4eb4ef6b-3369-432f-80d6-cc9a30f79706" class="bulleted-list"><li style="list-style-type:disc"><strong>The &quot;Vitals&quot; Bar:</strong> Four key icons with real-time values:<div style="display:contents" dir="auto"><ul id="47173f81-f448-4b46-b722-24538fefcf0e" class="bulleted-list"><li style="list-style-type:circle"><strong>Distance:</strong> Total length in $km$.</li></ul></div><div style="display:contents" dir="auto"><ul id="c0ac65a2-b18d-45ce-800a-a35c3d48d68f" class="bulleted-list"><li style="list-style-type:circle"><strong>Estimated Time:</strong> Based on a spirited driving profile (not standard traffic).</li></ul></div><div style="display:contents" dir="auto"><ul id="ee2ecaaa-b8be-40e6-9c28-800f66c240d2" class="bulleted-list"><li style="list-style-type:circle"><strong>SSS Badge:</strong> The 1–10 score in its color-coded ring (e.g., <strong>9.4 - Apex</strong>).</li></ul></div><div style="display:contents" dir="auto"><ul id="97c5cc72-9ac9-4cd6-be77-e61beaa939d6" class="bulleted-list"><li style="list-style-type:circle"><strong>Curviness Index (CI):</strong> A 1–5 &quot;Zig-Zag&quot; rating representing technicality.</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="b92a3c85-862d-4549-b632-6860b4994995" class="bulleted-list"><li style="list-style-type:disc"><strong>Social Engagement:</strong> Total &quot;Heart&quot; (Like) count.</li></ul></div><div style="display:contents" dir="auto"><h3 id="e62bf719-8ed6-4156-b8c0-920c879f7d38" class=""><strong>2.3.2 Layer 2: The Route Details (The &quot;Deep Dive&quot;)</strong></h3></div><div style="display:contents" dir="auto"><p id="402e297b-0e23-41ca-a475-cc3140b7ae8f" class=""><strong>UI Component:</strong> Full-Screen Modal. Accessed by swiping up on the Overview Sheet.</p></div><div style="display:contents" dir="auto"><ul id="4e2b7e19-463e-4423-b3c1-feedfe14e345" class="bulleted-list"><li style="list-style-type:disc"><strong>Surface Composition:</strong> Percentage breakdown (e.g., <strong>98% Asphalt / 2% Paved</strong>). <em>Note: Any &quot;Unpaved&quot; % triggers a red alert.</em></li></ul></div><div style="display:contents" dir="auto"><ul id="bca49bb2-ac18-4c66-8762-0ebd42f76e99" class="bulleted-list"><li style="list-style-type:disc"><strong>Elevation &amp; Gradient Profile:</strong><div style="display:contents" dir="auto"><ul id="6369752d-ccb5-45b9-be7c-389b0846c7c1" class="bulleted-list"><li style="list-style-type:circle"><strong>2D Graph:</strong> A linear plot showing altitude changes ($m$) over total distance.</li></ul></div><div style="display:contents" dir="auto"><ul id="1fe5a5b1-c215-43c2-824f-e76c79d00062" class="bulleted-list"><li style="list-style-type:circle"><strong>Max/Min Gradient:</strong> Highlighting the steepest sections (e.g., <strong>Max Grade: 11%</strong>).</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="5223b10a-5dde-4152-a0c1-6194a977f0d0" class="bulleted-list"><li style="list-style-type:disc"><strong>The &quot;Chassis Threat&quot; List:</strong> An itemized list of specific SSS deductions:<div style="display:contents" dir="auto"><ul id="130d3570-6b8e-4fac-994a-44a7e5e524fd" class="bulleted-list"><li style="list-style-type:circle"><em>&quot;3 Speed Humps detected&quot;</em></li></ul></div><div style="display:contents" dir="auto"><ul id="fa9a8f2e-7607-40d8-bfab-ac4bfd3d5ca3" class="bulleted-list"><li style="list-style-type:circle"><em>&quot;1 Pothole reported (24m ago)&quot;</em></li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="b739abde-a8dc-4b87-b20b-b105a0aaa9c8" class="bulleted-list"><li style="list-style-type:disc"><strong>Gallery &amp; Waypoints:</strong> Community photos and vertical timeline of planned stops (Scenic overlooks, High-octane fuel).</li></ul></div><div style="display:contents" dir="auto"><h3 id="c70695a7-f94e-469f-b9bc-6571ae91367c" class=""><strong>2.3.3 Standardized Action Bar (CTAs)</strong></h3></div><div style="display:contents" dir="auto"><p id="0c66cdcf-c8ba-44f7-a47e-7910fa5b2bff" class="">Sticky at the bottom of both Overview and Detail views.</p></div><div style="display:contents" dir="auto"><ul id="5f34be08-431a-4553-be47-089565b297bf" class="bulleted-list"><li style="list-style-type:disc"><strong>Start Drive (Primary):</strong> Launches TomTom SDK Nav + triggers &quot;Send to McLaren&quot; prompt.</li></ul></div><div style="display:contents" dir="auto"><ul id="dcde9412-70d0-4f0f-b468-ec15973464a3" class="bulleted-list"><li style="list-style-type:disc"><strong>Form Convoy (Secondary):</strong> Transitions to Squad Tab; pre-populates the builder with this route.</li></ul></div><div style="display:contents" dir="auto"><ul id="822b523c-f8b4-43b1-809d-c8433569b2f4" class="bulleted-list"><li style="list-style-type:disc"><strong>Share (Icon):</strong> Opens iOS Share Sheet with a Peak Flow Universal Link.</li></ul></div><div style="display:contents" dir="auto"><ul id="7a58e024-72a8-432a-aad8-faae5dbbf97c" class="bulleted-list"><li style="list-style-type:disc"><strong>Heart (Icon):</strong> Toggles &quot;Favorite&quot; status.</li></ul></div><div style="display:contents" dir="auto"><h3 id="7b9f7b28-c117-4220-abfb-971d14b80b9a" class="">2.4 Automatic Route Generation (The &quot;AI Architect&quot;)</h3></div><div style="display:contents" dir="auto"><p id="aae5a8dd-ccef-4b41-8a92-6a88e96ee106" class=""><em>Triggered via the Top Overlay CTA or Search Empty State.</em></p></div><div style="display:contents" dir="auto"><p id="83833bd4-a936-4293-b84d-cdbbb7878132" class=""><strong>Mode A: Voice-to-Flow</strong></p></div><div style="display:contents" dir="auto"><ul id="122510bb-08a6-4c35-b486-1059c7d39388" class="bulleted-list"><li style="list-style-type:disc"><strong>Input:</strong> User records voice intent (e.g., <em>&quot;Find me a curvy 2-hour loop heading North with no speed humps&quot;</em>).</li></ul></div><div style="display:contents" dir="auto"><ul id="cfb2725b-f578-4f62-94ad-c6e133f4d735" class="bulleted-list"><li style="list-style-type:disc"><strong>Orchestration:</strong> <strong>Claude/Gemini</strong> processes intent $\rightarrow$ JSON Object (Start, Waypoints, Destination).</li></ul></div><div style="display:contents" dir="auto"><ul id="2d0a763e-08d3-4ad9-8d39-d9ed702ffdc2" class="bulleted-list"><li style="list-style-type:disc"><strong>Validation:</strong> <strong>TomTom SDK</strong> snaps to road $\rightarrow$ Automatic <strong>SSS Audit</strong> (checks for hazards).</li></ul></div><div style="display:contents" dir="auto"><p id="21b00b64-8054-45cc-81a6-3ae88b84513b" class=""><strong>Mode B: Parameter Selection</strong></p></div><div style="display:contents" dir="auto"><ul id="054ddeec-9453-490f-b198-d29ec5abb811" class="bulleted-list"><li style="list-style-type:disc"><strong>Duration:</strong> Slider from <strong>&lt;1h</strong> up to <strong>Multiple Days</strong>.</li></ul></div><div style="display:contents" dir="auto"><ul id="4bd70e5c-e4df-4fce-a9be-f81a8ec50c7b" class="bulleted-list"><li style="list-style-type:disc"><strong>Direction:</strong> Selectors for <strong>North, South, East, West</strong>.</li></ul></div><div style="display:contents" dir="auto"><ul id="b057c65b-2500-4910-914e-0f503da22da2" class="bulleted-list"><li style="list-style-type:disc"><strong>Characteristics:</strong> Toggle <strong>Challenging</strong> (Technical/Curve-focused) vs. <strong>Relaxing</strong> (Scenic/SSS-focused).</li></ul></div><div style="display:contents" dir="auto"><h3 id="c5820ad8-209e-48ae-8dec-e4492bd8723a" class="">2.5 Manual Route Planning (The &quot;Draftsman&quot;)</h3></div><div style="display:contents" dir="auto"><p id="4c2b2930-7c6d-47fb-9601-c7198fe4208e" class=""><em>Triggered via the Top Overlay CTA.</em></p></div><div style="display:contents" dir="auto"><ul id="97299631-7899-46cb-88b8-2d0291148358" class="bulleted-list"><li style="list-style-type:disc"><strong>Waypoint Management:</strong> Search-to-Add major stops or <strong>Long-Press-on-Map</strong> to drop pins.</li></ul></div><div style="display:contents" dir="auto"><ul id="3ac302ac-8c97-4b5a-912a-05d6aa3cef8a" class="bulleted-list"><li style="list-style-type:disc"><strong>Rubber-Banding:</strong> Interactively drag route polyline to &quot;snap&quot; to specific roads.</li></ul></div><div style="display:contents" dir="auto"><ul id="9622643c-d4b1-424e-b08d-25b1aff28193" class="bulleted-list"><li style="list-style-type:disc"><strong>System Logic:</strong> Native Snap-to-Road ensures driveability; Hard toggle to &quot;Minimize Speed Humps&quot;.</li></ul></div><div style="display:contents" dir="auto"><hr id="33573bbd-7936-4cea-beed-fd8361671559"/></div><div style="display:contents" dir="auto"><h2 id="a45c4e64-7adf-4281-820f-77affa2f6b22" class="">3. Epic 2: Squad (Convoy &amp; Social Coordination)</h2></div><div style="display:contents" dir="auto"><p id="c5e96026-09d8-4686-9a70-e0cc73056586" class=""><em>The Squad tab is the mission control for group driving. It transitions from a Planning Hub to a Tactical Execution Engine.</em></p></div><div style="display:contents" dir="auto"><h3 id="f37dbd94-2d9d-4564-8fb4-92cb4641dba8" class="">3.1 Squad Start Page Structure</h3></div><div style="display:contents" dir="auto"><ul id="8e420b9b-37d6-448e-91c6-d4b3acb7c83e" class="bulleted-list"><li style="list-style-type:disc"><strong>Primary Action:</strong> <strong>Create Convoy</strong> (Instant/Scheduled) and <strong>Join Convoy</strong> (Enter 6-Digit Code / Scan QR).</li></ul></div><div style="display:contents" dir="auto"><ul id="ff331901-efa7-4ff2-9c64-1dad83f72c87" class="bulleted-list"><li style="list-style-type:disc"><strong>Secondary Action:</strong> &quot;Radar&quot; (nearby public convoys) is relegated to a small icon/secondary tab.</li></ul></div><div style="display:contents" dir="auto"><ul id="b86a1849-a509-4ee8-b1c4-36ba63100fb3" class="bulleted-list"><li style="list-style-type:disc"><strong>Builder Flow:</strong> Add Users (Search) $\rightarrow$ Add Title $\rightarrow$ Add Route $\rightarrow$ &quot;Drive Now&quot; or &quot;Schedule Event&quot;.</li></ul></div><div style="display:contents" dir="auto"><h3 id="b10064ad-43ca-4e06-a610-ddb3adfdf732" class="">3.2 Convoy Mode Execution</h3></div><div style="display:contents" dir="auto"><ul id="2fe58864-5ff7-435a-b72f-d8594be84f9f" class="bulleted-list"><li style="list-style-type:disc"><strong>Digital Tether:</strong> Leader dictates route; Followers use <code>reconstructionMode: .track</code> via TomTom SDK for 100% parity.</li></ul></div><div style="display:contents" dir="auto"><ul id="cafa349d-ed8c-4625-bdc0-3c4f370e7a58" class="bulleted-list"><li style="list-style-type:disc"><strong>Spatial Audio:</strong> PTT voices panned via Azimuth calculation: $\theta = \operatorname{atan2}(\Delta \text{Lon}, \Delta \text{Lat}) - \text{Heading}$.</li></ul></div><div style="display:contents" dir="auto"><ul id="c32b35bf-5a1b-4ce1-a020-cdc42d7461df" class="bulleted-list"><li style="list-style-type:disc"><strong>Fragmentation State Machine:</strong><div style="display:contents" dir="auto"><ul id="9fb5d7eb-dad6-443c-a4f1-f0616aea8bda" class="bulleted-list"><li style="list-style-type:circle"><strong>Connected ($&lt;1km$):</strong> &quot;Pack Green.&quot;</li></ul></div><div style="display:contents" dir="auto"><ul id="098f4392-545d-4159-b110-ff5b66a96f74" class="bulleted-list"><li style="list-style-type:circle"><strong>Fragmented ($1km - 2.5km$):</strong> &quot;Orange Alert: Gap detected.&quot;</li></ul></div><div style="display:contents" dir="auto"><ul id="65cb0d3b-1040-46c7-b178-6f9992bb8870" class="bulleted-list"><li style="list-style-type:circle"><strong>Disconnected ($&gt;2.5km$):</strong> &quot;Critical: Follower Lost.&quot;</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><hr id="9316fb86-e494-4e18-8719-af0fd563d2e1"/></div><div style="display:contents" dir="auto"><h2 id="b9b8b134-78a7-42b3-8403-ca9fe0429c01" class="">4. Epic 3: Library (Trips &amp; Performance)</h2></div><div style="display:contents" dir="auto"><p id="715c83fc-844f-4603-bd04-ca9004cbfddb" class=""><em>Consolidated Tab 3 containing History, Performance, Favorites, and Wishlist.</em></p></div><div style="display:contents" dir="auto"><h3 id="137dd271-68b6-4f32-99fc-f15277db50d0" class="">4.1 Trip History (The Memory)</h3></div><div style="display:contents" dir="auto"><ul id="4e3857e6-6ecc-458d-9f30-4bf4a24a8e64" class="bulleted-list"><li style="list-style-type:disc"><strong>Auto-Record:</strong> Logs all trips $&gt;2km$.</li></ul></div><div style="display:contents" dir="auto"><ul id="b5a527a4-a35e-4fa1-a938-c2c38bf996d5" class="bulleted-list"><li style="list-style-type:disc"><strong>Recap View:</strong> Displays photos, notes, and route summary (The &quot;Scrapbook&quot;).</li></ul></div><div style="display:contents" dir="auto"><h3 id="5425b315-9229-4a64-9203-6290455e47fd" class="">4.2 Performance Layer (Sub-Feature)</h3></div><div style="display:contents" dir="auto"><p id="80291b64-09eb-4a83-8fbe-72e94c867fc0" class=""><em>Located as a secondary toggle within a specific Trip entry.</em></p></div><div style="display:contents" dir="auto"><ul id="791278ac-e481-40de-b5f6-b87695cca59f" class="bulleted-list"><li style="list-style-type:disc"><strong>Telemetry:</strong> GPS trajectory, gear selection, fuel consumption, speed peaks.</li></ul></div><div style="display:contents" dir="auto"><ul id="bd2508ad-23c2-4cf5-8505-58acaf1de731" class="bulleted-list"><li style="list-style-type:disc"><strong>Heatmaps:</strong> Map overlays showing Speed Intensity and G-Force rankings.</li></ul></div><div style="display:contents" dir="auto"><ul id="27c5a0b0-4671-4b10-a8c1-b69c071dd89a" class="bulleted-list"><li style="list-style-type:disc"><strong>Benchmarking:</strong> Segment-based rankings (e.g., &quot;Sector 3 Time&quot;).</li></ul></div><div style="display:contents" dir="auto"><h3 id="e5171d52-fdbc-459f-a3a9-76e47e5d9df1" class="">4.3 Social Logic</h3></div><div style="display:contents" dir="auto"><ul id="c4c58794-44ed-4f3d-bce0-e6dd0467a90e" class="bulleted-list"><li style="list-style-type:disc"><strong>Favorites:</strong> Hearted routes synced for offline planning.</li></ul></div><div style="display:contents" dir="auto"><ul id="ccdfed4a-0129-45b6-a146-3e712c52284a" class="bulleted-list"><li style="list-style-type:disc"><strong>Wishlist:</strong> Routes saved for future consideration.</li></ul></div><div style="display:contents" dir="auto"><hr id="91d17bb1-f284-48a3-8c73-b6e07c159689"/></div><div style="display:contents" dir="auto"><h2 id="93d0fb5d-c33d-4d4f-9c84-b70c6c4e02cb" class="">5. Technical Specifications</h2></div><div style="display:contents" dir="auto"><h3 id="74e3bae7-c803-4d62-8b00-82a101299564" class="">5.1 Supercar Suitability Score (SSS)</h3></div><div style="display:contents" dir="auto"><ul id="4043c258-5486-4ca5-aac5-bddc3517ac44" class="bulleted-list"><li style="list-style-type:disc"><strong>Formula:</strong> $SSS = 10 - (D_{unpaved} + D_{hump} + D_{pothole})$.</li></ul></div><div style="display:contents" dir="auto"><ul id="6a249867-ab54-4eaf-a100-8555dc6bc7a9" class="bulleted-list"><li style="list-style-type:disc"><strong>HMI Alerts:</strong> Visual icon displayed <strong>200m</strong> prior to deflection; flash interrupt for real-time pothole reports.</li></ul></div><div style="display:contents" dir="auto"><h3 id="d30de176-def3-4736-b238-9b6247631e0a" class="">5.2 Offline Capability</h3></div><div style="display:contents" dir="auto"><ul id="89f353ac-f877-4929-9bec-7974f6b5919e" class="bulleted-list"><li style="list-style-type:disc"><strong>20GB FIFO Cache:</strong> Prioritizes map tiles, SSS gradient data, and convoy telemetry for areas without cellular signal.</li></ul></div><div style="display:contents" dir="auto"><h3 id="b02da101-f00a-43d8-a616-b4f599070f45" class="">5.3 Forced Geometry Logic</h3></div><div style="display:contents" dir="auto"><ul id="8f10230f-2868-4e1b-96c6-bbf334cbf74f" class="bulleted-list"><li style="list-style-type:disc"><strong>Mechanism:</strong> App pushes a dense array of coordinates (every 100m) to the TomTom SDK.</li></ul></div><div style="display:contents" dir="auto"><ul id="8c36e0fa-cb96-4e26-9391-8f9aabb8f351" class="bulleted-list"><li style="list-style-type:disc"><strong>Real-time Editing:</strong> If the Leader modifies the route, the new polyline is pushed via MQTT, forcing an instant sync.</li></ul></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
