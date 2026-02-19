@@ -2,9 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
-  base: '/peak-flow/', // Correct base path for GitHub Pages
+  base: command === 'serve' ? '/' : '/peak-flow/', // Root for dev, /peak-flow/ for prod build
   resolve: {
     dedupe: ['leaflet']
   },
@@ -33,4 +33,4 @@ export default defineConfig({
       }
     }
   }
-})
+}))
