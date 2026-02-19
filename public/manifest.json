@@ -1,0 +1,15 @@
+{
+    "short_name": "Peak Flow",
+    "name": "Peak Flow: Route Planner",
+    "icons": [
+        {
+            "src": "/pwa-icon.svg",
+            "type": "image/svg+xml",
+            "sizes": "512x512"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#ff5f1f",
+    "background_color": "#0f1115"
+}
