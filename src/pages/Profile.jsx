@@ -1,8 +1,33 @@
 import React, { useState } from 'react'
-import { Shield, Car, Settings, ChevronRight, Edit3 } from 'lucide-react'
+import { Shield, Car, Settings, ChevronRight, Edit3, RefreshCw } from 'lucide-react'
 
 const Profile = () => {
     const [sssThreshold, setSSSThreshold] = useState(7.0)
+    const [isUpdating, setIsUpdating] = useState(false)
+
+    const handleAppUpdate = async () => {
+        setIsUpdating(true)
+        if ('serviceWorker' in navigator) {
+            const reg = await navigator.serviceWorker.getRegistration()
+            if (reg) {
+                await reg.update()
+                if (reg.waiting) {
+                    reg.waiting.postMessage({ type: 'SKIP_WAITING' })
+                    // Wait for controller change then reload
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        window.location.reload()
+                    })
+                } else {
+                    // Slight delay to show interaction if no update found
+                    setTimeout(() => setIsUpdating(false), 1000)
+                }
+            } else {
+                setIsUpdating(false)
+            }
+        } else {
+            setIsUpdating(false)
+        }
+    }
 
     return (
         <div style={{ height: '100%', overflow: 'auto', padding: '56px 20px 100px' }} className="no-scrollbar">
@@ -97,6 +122,31 @@ const Profile = () => {
                     <StatCard label="Total Distance" value="2,840 km" />
                     <StatCard label="Avg. SSS" value="8.9" color="var(--sss-apex)" />
                     <StatCard label="Best G-Force" value="1.8G" color="var(--primary-apex)" />
+                </div>
+            </div>
+
+            {/* App Settings */}
+            <div className="glass-panel" style={{ padding: 20, marginBottom: 20 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>
+                    App Info
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Version</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>v1.0.2</span>
+                    </div>
+                    <button
+                        onClick={handleAppUpdate}
+                        disabled={isUpdating}
+                        className="btn-glass"
+                        style={{
+                            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                            marginTop: 8, borderColor: 'var(--primary-apex)', color: 'var(--primary-apex)'
+                        }}
+                    >
+                        <RefreshCw size={14} className={isUpdating ? 'spin-icon' : ''} />
+                        {isUpdating ? 'Checking...' : 'Update App'}
+                    </button>
                 </div>
             </div>
         </div>

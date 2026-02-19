@@ -1,15 +1,16 @@
 {
-    "short_name": "Peak Flow",
-    "name": "Peak Flow: Route Planner",
+    "short_name": "PEAK-FLOW",
+    "name": "PEAK-FLOW: Deep Drive State",
     "icons": [
         {
-            "src": "/pwa-icon.svg",
-            "type": "image/svg+xml",
-            "sizes": "512x512"
+            "src": "icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ],
     "start_url": ".",
     "display": "standalone",
-    "theme_color": "#0f1115",
-    "background_color": "#0f1115"
+    "theme_color": "#000000",
+    "background_color": "#000000"
 }
