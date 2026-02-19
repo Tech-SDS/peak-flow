@@ -172,17 +172,23 @@ const createPOIIcon = () => L.divIcon({
 
 const poiIcon = createPOIIcon()
 
-const createDriverIcon = (name) => L.divIcon({
-    className: 'driver-marker',
-    html: `<div style="position: relative; width: 0; height: 0;">
-        <div style="position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); background: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: black; box-shadow: 0 4px 12px rgba(0,0,0,0.4); white-space: nowrap; pointer-events: none;">
-            ${name}
+const createDriverIcon = (name, vehicle) => {
+    // Simple heuristic: remove the first word (Brand)
+    const model = vehicle ? vehicle.split(' ').slice(1).join(' ') : ''
+
+    return L.divIcon({
+        className: 'driver-marker',
+        html: `<div style="position: relative; width: 0; height: 0;">
+        <div style="position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); background: white; padding: 6px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: black; box-shadow: 0 4px 12px rgba(0,0,0,0.4); white-space: nowrap; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <div style="line-height: 1;">${name}</div>
+            ${model ? `<div style="font-size: 9px; font-weight: 500; color: #666; line-height: 1;">${model}</div>` : ''}
         </div>
         <div style="position: absolute; top: -6px; left: -6px; width: 12px; height: 12px; background: #00e676; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px #00e676;"></div>
     </div>`,
-    iconSize: [0, 0],
-    iconAnchor: [0, 0]
-})
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+    })
+}
 
 const MapContainerComponent = ({ routes = [], routeGeometry, flyToTarget, onRouteTap, onLocationFound, mapStyle = 'default', onMapMove, onMapClick, selectedRouteId, poiMarker, liveSharing = false, nearbyDrivers = [], onDriverClick, activeNavRoute, alternativeRoutes = [], onAlternativeRouteSelect, searchResults = [], onSearchResultClick, onManualPan }) => {
     const [userLocation, setUserLocation] = useState(null)
@@ -308,7 +314,7 @@ const MapContainerComponent = ({ routes = [], routeGeometry, flyToTarget, onRout
                     <Marker
                         key={driver.id}
                         position={[driver.lat, driver.lng]}
-                        icon={createDriverIcon(driver.name)}
+                        icon={createDriverIcon(driver.name, driver.vehicle)}
                         eventHandlers={{
                             click: (e) => {
                                 L.DomEvent.stopPropagation(e)

@@ -1,5 +1,5 @@
 import React, { useState, useReducer, useRef, useEffect, useCallback } from 'react'
-import { Plus, Users, Share2, MapPin, Navigation, Calendar, Clock, Trash2, Camera, X, MessageSquare, Image as ImageIcon, ArrowLeft, ArrowRight, ChevronRight, ChevronLeft, Info, Settings, MoreVertical, Send, Check, AlertTriangle, Sparkles, Radio, QrCode, Zap, Route, MessageCircle, Wifi, WifiOff, Mic, Map as MapIcon } from 'lucide-react'
+import { Plus, Users, Share2, MapPin, Navigation, Calendar, Clock, Trash2, Camera, X, MessageSquare, Image as ImageIcon, ArrowLeft, ArrowRight, ChevronRight, ChevronLeft, Info, Settings, MoreVertical, Send, Check, AlertTriangle, Sparkles, Radio, QrCode, Zap, Route, MessageCircle, Wifi, WifiOff, Mic, Map as MapIcon, Search } from 'lucide-react'
 import { calculateMultiStopRoute } from '../lib/routing'
 import { reverseGeocode } from '../lib/searchService'
 import RouteSummaryCard from '../components/RouteSummaryCard'
@@ -83,6 +83,7 @@ function convoyReducer(state, action) {
             return { ...state, convoy: { ...state.convoy, route: action.payload } }
         case 'UPDATE_STOP_DETAILS':
             // payload: { index, details }
+            if (!state.convoy || !state.convoy.route) return state
             const updatedRoute = { ...state.convoy.route }
             // Ensure stops array exists (create from legs/waypoints if needed, but for now assuming we modify existing structure or add metadata)
             // Actually, RouteSummaryCard normalizes it. We need to store this metadata back to the source.
@@ -144,6 +145,11 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
     const [showExitConfirmation, setShowExitConfirmation] = useState(false)
     const [userLocation, setUserLocation] = useState(null)
     const [isEditingRoute, setIsEditingRoute] = useState(false)
+    const [upcomingConvoys, setUpcomingConvoys] = useState([...MOCK_GROUPS])
+    const [pastConvoys, setPastConvoys] = useState([
+        { id: 'p1', title: 'Midnight Run', image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=300', members: 8, date: '2 days ago' },
+        { id: 'p2', title: 'Alpine Tour 2023', image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300', members: 12, date: '4 weeks ago' }
+    ])
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -395,25 +401,90 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                 )}
 
                 <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Upcoming Convoys</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
+                    {[...upcomingConvoys]
+                        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+                        .map(group => (
+                            <div key={group.id} onClick={() => dispatch({ type: 'JOIN_CONVOY', payload: { title: group.title, code: 'SAMPLE', route: group.route } })} className="glass-panel" style={{ display: 'flex', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s' }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                                <div style={{ width: 90, height: 90, flexShrink: 0, overflow: 'hidden' }}>
+                                    <img src={group.image} alt={group.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                                <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
+                                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{group.title}</h4>
+                                    <div style={{ display: 'flex', gap: 10, fontSize: 11, color: 'var(--text-secondary)' }}>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Users size={10} /> {group.members}</span>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><MapPin size={10} /> {group.distance}km</span>
+                                    </div>
+                                    <p style={{ fontSize: 12, color: group.countdown === 'Now happening' ? 'var(--sss-apex)' : 'var(--primary-apex)', fontWeight: 600, marginTop: 4 }}>{group.countdown}</p>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', gap: 12 }}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            if (window.confirm(`Delete "${group.title}"?`)) {
+                                                setUpcomingConvoys(prev => prev.filter(c => c.id !== group.id))
+                                            }
+                                        }}
+                                        style={{
+                                            background: 'none', border: 'none', padding: 8,
+                                            color: 'var(--text-muted)', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            transition: 'color 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.color = '#ff4444'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                    <ChevronRight size={18} color="var(--text-muted)" />
+                                </div>
+                            </div>
+                        ))}
+                </div>
+
+                {/* Past Convoys */}
+                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'var(--text-muted)' }}>Past Convoys</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {MOCK_GROUPS.map(group => (
-                        <div key={group.id} onClick={() => dispatch({ type: 'JOIN_CONVOY', payload: { title: group.title, code: 'SAMPLE', route: group.route } })} className="glass-panel" style={{ display: 'flex', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s' }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                    {pastConvoys.map(group => (
+                        <div key={group.id} onClick={() => dispatch({ type: 'JOIN_CONVOY', payload: { title: group.title, code: 'PAST', route: null } })}
+                            className="glass-panel"
+                            style={{ display: 'flex', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s', filter: 'grayscale(1)', opacity: 0.8 }}>
                             <div style={{ width: 90, height: 90, flexShrink: 0, overflow: 'hidden' }}>
                                 <img src={group.image} alt={group.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
-                            <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
-                                <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{group.title}</h4>
-                                <div style={{ display: 'flex', gap: 10, fontSize: 11, color: 'var(--text-secondary)' }}>
+                            <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, color: 'var(--text-secondary)' }}>{group.title}</h4>
+                                <div style={{ display: 'flex', gap: 10, fontSize: 11, color: 'var(--text-muted)' }}>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Users size={10} /> {group.members}</span>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><MapPin size={10} /> {group.distance}km</span>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Calendar size={10} /> {group.date}</span>
                                 </div>
-                                <p style={{ fontSize: 12, color: group.countdown === 'Now happening' ? 'var(--sss-apex)' : 'var(--primary-apex)', fontWeight: 600, marginTop: 4 }}>{group.countdown}</p>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', color: 'var(--text-muted)' }}><ChevronRight size={18} /></div>
+                            <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', gap: 12 }}>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        if (window.confirm(`Delete "${group.title}" from history?`)) {
+                                            setPastConvoys(prev => prev.filter(c => c.id !== group.id))
+                                        }
+                                    }}
+                                    style={{
+                                        background: 'none', border: 'none', padding: 8,
+                                        color: 'var(--text-muted)', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        transition: 'color 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = '#ff4444'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                                <ChevronRight size={18} color="var(--text-muted)" />
+                            </div>
                         </div>
                     ))}
+                    {pastConvoys.length === 0 && <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>No past convoys</p>}
                 </div>
             </div>
         )
@@ -649,7 +720,43 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                 </div>
 
                 {/* Confirm Button */}
-                <button onClick={() => dispatch({ type: 'CONFIRM_CONVOY' })} disabled={!convoy.title}
+                <button onClick={() => {
+                    dispatch({ type: 'CONFIRM_CONVOY' })
+
+                    // Calculate countdown and timestamp
+                    let countdownText = 'Now happening'
+                    let timestamp = Date.now()
+
+                    if (convoy.schedule !== 'instant') {
+                        // schedule format: "YYYY-MM-DDTHH:MM"
+                        const scheduledDate = new Date(convoy.schedule)
+                        timestamp = scheduledDate.getTime()
+
+                        const diffMs = scheduledDate - Date.now()
+                        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+
+                        if (diffDays <= 0) {
+                            countdownText = 'Today' // Or 'Now happening' if close enough
+                        } else if (diffDays === 1) {
+                            countdownText = 'Tomorrow'
+                        } else {
+                            countdownText = `In ${diffDays} days`
+                        }
+                    }
+
+                    // Add to upcoming convoys list
+                    const newConvoy = {
+                        id: convoy.id,
+                        title: convoy.title,
+                        image: convoy.coverImage || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=300',
+                        members: convoy.members.length,
+                        distance: convoy.route ? Math.round(convoy.route.distance) : 0,
+                        countdown: countdownText,
+                        timestamp: timestamp,
+                        route: convoy.route
+                    }
+                    setUpcomingConvoys(prev => [...prev, newConvoy])
+                }} disabled={!convoy.title}
                     className="btn-primary" style={{ width: '100%', padding: '16px', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: convoy.title ? 1 : 0.4 }}>
                     ✓ Create Convoy
                 </button>
@@ -722,7 +829,7 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                 <div style={{ flexShrink: 0, position: 'relative' }}>
                     {convoy.coverImage ? (
                         <div style={{ height: 180, position: 'relative' }}>
-                            <img src={convoy.coverImage} alt="cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={convoy.coverImage} alt="" onError={(e) => e.currentTarget.style.display = 'none'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(15,17,21,0.3) 0%, rgba(15,17,21,0.95) 100%)' }} />
                         </div>
                     ) : (
@@ -982,6 +1089,7 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                             if (onStartDrive) onStartDrive({
                                 title: convoy.title || 'Convoy',
                                 memberCount: convoy.members.length,
+                                members: convoy.members,
                                 navigateToStart: true,
                                 ...(convoy.route || {})
                             })

@@ -5,6 +5,7 @@ import Squad from './pages/Squad'
 import Trips from './pages/Trips'
 import Profile from './pages/Profile'
 import { MOCK_TRIPS } from './lib/mockData'
+import SplashScreen from './components/SplashScreen'
 
 function App() {
     const [activeTab, setActiveTab] = useState('discover')
@@ -113,6 +114,8 @@ function App() {
 
     // ...
 
+    const [squadEnabled, setSquadEnabled] = useState(false)
+
     const renderContent = () => {
         switch (activeTab) {
             // ...
@@ -164,17 +167,30 @@ function App() {
                     onStartDrive={handleStartDrive}
                     onEndDrive={handleDiscoverEndDrive}
                     onToggleNav={setIsNavHidden}
+                    squadEnabled={squadEnabled}
+                    setSquadEnabled={setSquadEnabled}
                 />
             )
         }
     }
 
+    const [showSplash, setShowSplash] = useState(true)
+
     return (
-        <div className="app-container" style={{ height: '100vh', width: '100vw', position: 'relative', overflow: 'hidden' }}>
+        <div className="app-container" style={{
+            height: '100vh',
+            width: '100vw',
+            position: 'relative',
+            overflow: 'hidden',
+            background: '#000000', // Hard safety background
+            color: 'white'
+        }}>
+            {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+
             <main style={{ height: '100%' }}>
                 {renderContent()}
             </main>
-            <NavDock activeTab={activeTab} onTabChange={setActiveTab} activeConvoy={activeConvoy} hidden={!!drivingMode || isNavHidden} />
+            <NavDock activeTab={activeTab} onTabChange={setActiveTab} activeConvoy={activeConvoy} hidden={!!drivingMode || isNavHidden} squadEnabled={squadEnabled} />
         </div>
     )
 }

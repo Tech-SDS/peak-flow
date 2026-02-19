@@ -320,65 +320,64 @@ const RoutePlanningPanel = ({ route, routes, onSelectRoute, onStart, onCancel, o
                         userLocation={userLocation}
                         showHeader={true}
                     />
-                </div>
-
-                {/* ─── Route Details (Surface, Hazards, Elevation) ─── */}
-                <div style={{ padding: '0 20px 20px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        Route Details
-                    </div>
-                    {/* Route Attributes Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
-                        {/* Surface Types */}
-                        {route.surface && (
-                            <div className="glass-panel" style={{ padding: '12px', background: 'rgba(255,255,255,0.03)' }}>
-                                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase' }}>Surface</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                    {Object.entries(route.surface).map(([type, pct]) => pct > 0 && (
-                                        <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                                            <div style={{ flex: 1, textTransform: 'capitalize' }}>{type}</div>
-                                            <div style={{ fontWeight: 700, color: 'var(--primary-apex)' }}>{pct}%</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Hazards / Alerts */}
-                        {route.hazards && (
-                            <div className="glass-panel" style={{ padding: '12px', background: 'rgba(255,255,255,0.03)' }}>
-                                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase' }}>Alerts</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                                        <span style={{ color: route.hazards.potholes > 0 ? '#ff4444' : 'var(--text-muted)' }}>●</span>
-                                        <span style={{ color: route.hazards.potholes > 0 ? 'white' : 'var(--text-muted)' }}>Potholes: {route.hazards.potholes > 0 ? 'Yes' : 'None'}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                                        <span style={{ color: route.hazards.speedHumps > 0 ? '#ffbb33' : 'var(--text-muted)' }}>●</span>
-                                        <span style={{ color: route.hazards.speedHumps > 0 ? 'white' : 'var(--text-muted)' }}>Speed Humps: {route.hazards.speedHumps}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                                        <span style={{ color: route.hazards.unpaved > 0 ? '#ffbb33' : 'var(--text-muted)' }}>●</span>
-                                        <span style={{ color: route.hazards.unpaved > 0 ? 'white' : 'var(--text-muted)' }}>Unpaved: {route.hazards.unpaved > 0 ? 'Yes' : 'None'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Elevation Profile (Simple Stats) */}
-                    {route.elevation && (
-                        <div style={{ marginBottom: 24, padding: '0 4px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                                <span>Elevation Gain</span>
-                                <span style={{ color: 'white', fontWeight: 700 }}>+{route.elevation.gain}m</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)' }}>
-                                <span>Max Gradient</span>
-                                <span style={{ color: 'white', fontWeight: 700 }}>{route.elevation.maxGradient}%</span>
-                            </div>
+                    {/* ─── Route Details (Surface, Hazards, Elevation) ─── */}
+                    <div style={{ padding: '0 20px 0' }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            Route Details
                         </div>
-                    )}
+                        {/* Route Attributes Grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+                            {/* Surface Types */}
+                            {route.surface && (
+                                <div className="glass-panel" style={{ padding: '12px', background: 'rgba(255,255,255,0.03)' }}>
+                                    <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase' }}>Surface</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                        {Object.entries(route.surface).map(([type, pct]) => pct > 0 && (
+                                            <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                                                <div style={{ flex: 1, textTransform: 'capitalize' }}>{type}</div>
+                                                <div style={{ fontWeight: 700, color: 'var(--primary-apex)' }}>{pct}%</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Hazards / Alerts */}
+                            {route.hazards && (
+                                <div className="glass-panel" style={{ padding: '12px', background: 'rgba(255,255,255,0.03)' }}>
+                                    <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase' }}>Alerts</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                                            <span style={{ color: route.hazards.potholes > 0 ? '#ff4444' : 'var(--text-muted)' }}>●</span>
+                                            <span style={{ color: route.hazards.potholes > 0 ? 'white' : 'var(--text-muted)' }}>Potholes: {route.hazards.potholes > 0 ? 'Yes' : 'None'}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                                            <span style={{ color: route.hazards.speedHumps > 0 ? '#ffbb33' : 'var(--text-muted)' }}>●</span>
+                                            <span style={{ color: route.hazards.speedHumps > 0 ? 'white' : 'var(--text-muted)' }}>Speed Humps: {route.hazards.speedHumps}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                                            <span style={{ color: route.hazards.unpaved > 0 ? '#ffbb33' : 'var(--text-muted)' }}>●</span>
+                                            <span style={{ color: route.hazards.unpaved > 0 ? 'white' : 'var(--text-muted)' }}>Unpaved: {route.hazards.unpaved > 0 ? 'Yes' : 'None'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Elevation Profile (Simple Stats) */}
+                        {route.elevation && (
+                            <div style={{ marginBottom: 24, padding: '0 4px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                                    <span>Elevation Gain</span>
+                                    <span style={{ color: 'white', fontWeight: 700 }}>+{route.elevation.gain}m</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)' }}>
+                                    <span>Max Gradient</span>
+                                    <span style={{ color: 'white', fontWeight: 700 }}>{route.elevation.maxGradient}%</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Action Bar (Expanded Mode - Pinned to bottom) */}

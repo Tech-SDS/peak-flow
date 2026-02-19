@@ -147,7 +147,7 @@ const RouteOverviewSheet = ({
                 <div style={{ padding: '4px 20px 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                         <div>
-                            <h2 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.1, marginBottom: 4 }} className="truncate-2">
+                            <h2 style={{ fontSize: 24, fontWeight: 500, lineHeight: 1.1, marginBottom: 4, fontFamily: 'var(--font-display)' }} className="truncate-2">
                                 {route.name}
                             </h2>
                             <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>

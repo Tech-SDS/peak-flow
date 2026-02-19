@@ -1,7 +1,7 @@
 import React from 'react'
 import { Compass, Users, Clock, User } from 'lucide-react'
 
-const NavDock = ({ activeTab, onTabChange, activeConvoy, hidden }) => {
+const NavDock = ({ activeTab, onTabChange, activeConvoy, hidden, squadEnabled }) => {
     if (hidden) return null
     const navItems = [
         { id: 'discover', label: 'Discover', icon: Compass },
@@ -24,7 +24,7 @@ const NavDock = ({ activeTab, onTabChange, activeConvoy, hidden }) => {
             {navItems.map((item) => {
                 const Icon = item.icon
                 const isActive = activeTab === item.id
-                const isConvoyActive = item.id === 'squad' && activeConvoy?.active
+                const isConvoyActive = (item.id === 'squad' && activeConvoy?.active) || (item.id === 'discover' && squadEnabled)
                 return (
                     <button
                         key={item.id}

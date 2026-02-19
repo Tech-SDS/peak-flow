@@ -44,7 +44,7 @@ const Profile = () => {
                 }}>
                     S
                 </div>
-                <h1 style={{ fontSize: 24, fontWeight: 800 }}>Stefan K.</h1>
+                <h1 style={{ fontSize: 32, fontWeight: 500, fontFamily: 'var(--font-display)' }}>Stefan K.</h1>
                 <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
                     marginTop: 8, padding: '6px 14px',
@@ -60,7 +60,7 @@ const Profile = () => {
             {/* Vehicle Card */}
             <div className="glass-panel" style={{ padding: 20, marginBottom: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <h3 style={{ fontSize: 20, fontWeight: 500, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Car size={18} color="var(--primary-apex)" /> My Vehicle
                     </h3>
                     <button style={{
@@ -83,7 +83,7 @@ const Profile = () => {
 
             {/* Driving Preferences */}
             <div className="glass-panel" style={{ padding: 20, marginBottom: 20 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h3 style={{ fontSize: 20, fontWeight: 500, fontFamily: 'var(--font-display)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Settings size={18} color="var(--primary-apex)" /> Preferences
                 </h3>
 
@@ -114,7 +114,7 @@ const Profile = () => {
 
             {/* Quick Stats */}
             <div className="glass-panel" style={{ padding: 20 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>
+                <h3 style={{ fontSize: 20, fontWeight: 500, fontFamily: 'var(--font-display)', marginBottom: 16 }}>
                     📊 Statistics
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>

@@ -96,7 +96,7 @@ const Trips = ({
         <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
             <div style={{ padding: '56px 20px 0', flexShrink: 0 }}>
-                <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>Trips</h1>
+                <h1 style={{ fontSize: 32, fontWeight: 500, marginBottom: 4, fontFamily: 'var(--font-display)' }}>Trips</h1>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 20 }}>
                     Your drive memories & future adventures
                 </p>
@@ -163,7 +163,7 @@ const Trips = ({
                                 background: 'linear-gradient(transparent 30%, rgba(15,17,21,0.9) 100%)'
                             }} />
                             <div style={{ position: 'absolute', bottom: 16, left: 16 }}>
-                                <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>{selectedTrip.routeName}</h2>
+                                <h2 style={{ fontSize: 24, fontWeight: 500, marginBottom: 4, fontFamily: 'var(--font-display)' }}>{selectedTrip.routeName}</h2>
                                 <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                                     {new Date(selectedTrip.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                                 </p>

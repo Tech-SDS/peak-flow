@@ -76,7 +76,7 @@ const RouteDetailSheet = ({
 
                         {/* Title overlay */}
                         <div style={{ position: 'absolute', bottom: 16, left: 20, right: 20 }}>
-                            <h2 style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.2, marginBottom: 4 }}>{route.name}</h2>
+                            <h2 style={{ fontSize: 28, fontWeight: 500, lineHeight: 1.2, marginBottom: 4, fontFamily: 'var(--font-display)' }}>{route.name}</h2>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: 'var(--text-secondary)' }}>
                                 <span>{route.region}</span>
                                 <span style={{ opacity: 0.4 }}>·</span>

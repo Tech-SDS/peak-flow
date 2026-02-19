@@ -369,6 +369,7 @@ export const MOCK_GROUPS = [
         id: 1,
         title: 'PEX team roadtrip to Arlberg',
         countdown: 'Now happening',
+        timestamp: Date.now(), // Current time
         members: 8,
         distance: 530,
         startLocation: 'Munich',
@@ -380,6 +381,7 @@ export const MOCK_GROUPS = [
         id: 2,
         title: 'Black Forest Grand Tour',
         countdown: 'In 12 days',
+        timestamp: Date.now() + 12 * 86400000,
         members: 5,
         distance: 420,
         startLocation: 'Stuttgart',
@@ -391,6 +393,7 @@ export const MOCK_GROUPS = [
         id: 3,
         title: 'Alpine Sunrise Convoy',
         countdown: 'In 18 days',
+        timestamp: Date.now() + 18 * 86400000,
         members: 12,
         distance: 680,
         startLocation: 'Innsbruck',

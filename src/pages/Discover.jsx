@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import { Layers, X, Crosshair, Users, Globe, Map as MapIcon, Check, Info, List, Verified, Heart, Plus, Sparkles, Play, Pause, Square, Circle, StopCircle, ArrowLeft, Navigation, Clock } from 'lucide-react'
+import { Layers, X, Crosshair, Users, Globe, Map as MapIcon, Check, Info, List, Verified, Heart, Plus, Sparkles, Play, Pause, Square, Circle, StopCircle, ArrowLeft, Navigation, Clock, Mic } from 'lucide-react'
 import { calculateRoute, calculateMultiStopRoute } from '../lib/routing'
 import RoutePlanningPanel from '../components/RoutePlanningPanel'
 import TurnByTurnPanel from '../components/TurnByTurnPanel'
@@ -29,12 +29,36 @@ const MOCK_DRIVERS = [
     { id: 'd2', name: 'Anna B.', vehicle: 'Porsche Cayman GT4', latOffset: -0.01, lngOffset: 0.02 },
 ]
 
+const MOCK_CONVOY_MEMBERS = [
+    { name: 'Max', distance: 30, vehicle: 'Porsche 911 GT3' },
+    { name: 'Anna', distance: 20, vehicle: 'Porsche Cayman GT4' },
+    { name: 'Tom', distance: 385, vehicle: 'BMW M3 Touring' }, // Rounds to 385
+    { name: 'Lisa', distance: 5, vehicle: 'Audi RS6' },
+]
+
+const formatDictance = (meters) => {
+    if (meters <= 20) return meters
+    return Math.round(meters / 5) * 5
+}
 
 
-const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList, onSaveMyRoute, onSaveTrip, createMode, onResetCreateMode, initialRoute, onClearInitialRoute, onRequestConvoy, drivingMode, onStartDrive, onEndDrive, onToggleNav }) => {
+
+const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList, onSaveMyRoute, onSaveTrip, createMode, onResetCreateMode, initialRoute, onClearInitialRoute, onRequestConvoy, drivingMode, onStartDrive, onEndDrive, onToggleNav, squadEnabled, setSquadEnabled }) => {
     const [viewMode, setViewMode] = useState('map') // 'map' | 'list' | 'editor'
+    const [returnToViewMode, setReturnToViewMode] = useState(null)
+
     const [userLocation, setUserLocation] = useState(null)
     const [allRoutes, setAllRoutes] = useState([...ROUTE_DATABASE])
+
+    const displayMembers = useMemo(() => {
+        if (drivingMode?.members) {
+            return drivingMode.members.map((m, i) => ({
+                ...m,
+                distance: m.distance || (i + 1) * 45 + Math.floor(Math.random() * 20)
+            }))
+        }
+        return MOCK_CONVOY_MEMBERS
+    }, [drivingMode])
 
 
     /*
@@ -73,7 +97,16 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
     const [activeFilters, setActiveFilters] = useState(new Set()) // Multi-select
     const [mapCenter, setMapCenter] = useState(null)
     const [showSquadModal, setShowSquadModal] = useState(false)
-    const [squadEnabled, setSquadEnabled] = useState(false)
+    const [showLeaveModal, setShowLeaveModal] = useState(false) // New state for leave confirmation
+
+
+    // ─── Unified Convoy Panel State ───
+    const [showConvoyPanel, setShowConvoyPanel] = useState(false)
+    const [convoyTab, setConvoyTab] = useState('members') // 'members' | 'comms'
+    const [convoyFeed, setConvoyFeed] = useState([
+        { id: 'sys1', type: 'system', text: 'Convoy started', time: 'Now' }
+    ])
+    const [isRecording, setIsRecording] = useState(false)
     const [nearbyDrivers, setNearbyDrivers] = useState([])
     const [selectedDriver, setSelectedDriver] = useState(null)
     const [selectedPOI, setSelectedPOI] = useState(null)
@@ -150,6 +183,18 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
     const [recordingDuration, setRecordingDuration] = useState(0)
     const [showSaveModal, setShowSaveModal] = useState(false)
     const [tripName, setTripName] = useState('')
+    const [isPTTActive, setIsPTTActive] = useState(false)
+    const [pttDuration, setPttDuration] = useState(0)
+
+    useEffect(() => {
+        let interval
+        if (isPTTActive) {
+            interval = setInterval(() => {
+                setPttDuration(prev => prev + 1)
+            }, 1000)
+        }
+        return () => clearInterval(interval)
+    }, [isPTTActive])
     const [showToast, setShowToast] = useState(false)
     const [toastMessage, setToastMessage] = useState('')
 
@@ -171,18 +216,47 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
 
     // Simulate Radar Finding Drivers
     useEffect(() => {
+        let drivers = []
+
+        // 1. If Squad/Radar is explicitly enabled, show random nearby drivers (Discovery Mode)
         if (squadEnabled && userLocation) {
-            // Immediate reveal for demo
-            const drivers = MOCK_DRIVERS.map(d => ({
+            drivers = [...drivers, ...MOCK_DRIVERS.map(d => ({
                 ...d,
                 lat: userLocation.lat + d.latOffset,
                 lng: userLocation.lng + d.lngOffset
-            }))
-            setNearbyDrivers(drivers)
-        } else {
-            setNearbyDrivers([])
+            }))]
         }
-    }, [squadEnabled, userLocation])
+
+        // 2. If Driving in a Convoy, show convoy members (Active Convoy Mode)
+        // We filter out duplicates based on name if they exist in both lists
+        if (drivingMode?.members && userLocation) {
+            const memberDrivers = drivingMode.members.map((m, i) => {
+                // Generate a consistent pseudo-random offset based on name char codes
+                const seed = m.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+                const latOffset = ((seed % 100) / 10000) * (i % 2 === 0 ? 1 : -1)
+                const lngOffset = ((seed % 50) / 5000) * (i % 2 === 0 ? -1 : 1)
+
+                return {
+                    id: m.id,
+                    name: m.name,
+                    vehicle: m.vehicle,
+                    lat: userLocation.lat + latOffset + 0.005, // Slightly ahead/behind
+                    lng: userLocation.lng + lngOffset + 0.005,
+                    isConvoy: true
+                }
+            })
+
+            // Filter out MOCK_DRIVERS that match convoy members by name to avoid duplicates
+            // (In a real app, we'd use IDs)
+            const convoyNames = new Set(memberDrivers.map(d => d.name))
+            drivers = [
+                ...drivers.filter(d => !convoyNames.has(d.name)),
+                ...memberDrivers
+            ]
+        }
+
+        setNearbyDrivers(drivers)
+    }, [squadEnabled, userLocation, drivingMode])
 
     const formatDuration = (seconds) => {
         const mins = Math.floor(seconds / 60)
@@ -395,8 +469,30 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
             })
         }
 
+        // 3. Calculate Distance from User
+        if (userLocation) {
+            routes = routes.map(r => {
+                const startCoords = r.coordinates?.start
+                if (!startCoords) return r
+
+                const R = 6371 // Earth radius in km
+                const dLat = (startCoords.lat - userLocation.lat) * Math.PI / 180
+                const dLon = (startCoords.lng - userLocation.lng) * Math.PI / 180
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(startCoords.lat * Math.PI / 180) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+                const d = R * c
+
+                return { ...r, distanceFromUser: d.toFixed(1) } // Add formatted distance
+            })
+            // Optional: Sort by proximity if searching "Nearby"? 
+            // For now, just enriching the data.
+        }
+
         return routes
-    }, [searchQuery, activeFilters, allRoutes, viewMode, generatedRoute, drivingMode, activeNavRoute, routeLoading, selectedPOI, createMode, drivenCuratedRoute])
+    }, [searchQuery, activeFilters, allRoutes, viewMode, generatedRoute, drivingMode, activeNavRoute, routeLoading, selectedPOI, createMode, drivenCuratedRoute, userLocation])
 
     // DEBUG LOGGING - SAFELY PLACED
     console.log('[Discover] Render State:', {
@@ -420,12 +516,16 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
         } else if (selectedRoute) {
             setSelectedRoute(null)
             setFlyToTarget(null)
+            if (returnToViewMode) {
+                setViewMode(returnToViewMode)
+                setReturnToViewMode(null)
+            }
         } else if (selectedPOI) {
             setSelectedPOI(null)
             setFlyToTarget(null)
             setSearchResults([])
         }
-    }, [activeNavRoute, selectedRoute, selectedPOI])
+    }, [activeNavRoute, selectedRoute, selectedPOI, returnToViewMode])
 
     // ─── Route Planner Handlers ───
     const handleRouteRequest = async (destination) => {
@@ -508,9 +608,17 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
         }
     }, [])
 
+
+
     // ─── Map Handlers ───
     const handleRouteTap = useCallback((route) => {
         if (!route) return
+
+        // If coming from list view, remember to go back
+        if (viewMode === 'list') {
+            setReturnToViewMode('list')
+        }
+
         setFlyToTarget({
             ...route,
             paddingOptions: {
@@ -520,7 +628,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
         })
         setSelectedRoute(route)
         setViewMode('map') // Ensure we switch to map view to see the route
-    }, [])
+    }, [viewMode])
 
     const handleExpandToDetail = useCallback(() => {
         if (selectedRoute) {
@@ -532,11 +640,21 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
     const handleCloseSheet = useCallback(() => {
         setSelectedRoute(null)
         setFlyToTarget(null)
-    }, [])
+
+        if (returnToViewMode) {
+            setViewMode(returnToViewMode)
+            setReturnToViewMode(null)
+        }
+    }, [returnToViewMode])
 
     const handleCloseDetail = useCallback(() => {
         setDetailRoute(null)
-    }, [])
+        // Also restore view mode if closing details
+        if (returnToViewMode) {
+            setViewMode(returnToViewMode)
+            setReturnToViewMode(null)
+        }
+    }, [returnToViewMode])
 
     const handleAIGenerated = useCallback((route) => {
         setShowAI(false)
@@ -660,7 +778,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
 
 
                 poiMarker={selectedPOI}
-                liveSharing={squadEnabled}
+                liveSharing={squadEnabled || (drivingMode && drivingMode.memberCount > 0)}
                 nearbyDrivers={nearbyDrivers}
                 onDriverClick={(driver) => setSelectedDriver(driver)}
                 activeNavRoute={activeNavRoute}
@@ -749,8 +867,8 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                             >
                                 <ArrowLeft size={18} />
                             </button>
-                            <div className="glass-overlay" style={{ flex: 1, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <span style={{ fontSize: 14, fontWeight: 700 }}>{drivingMode.title}</span>
+                            <div className="glass-panel" style={{ flex: 1, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)' }}>{drivingMode.title}</span>
                                 {drivingMode.memberCount && (
                                     <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
                                         <Users size={12} /> {drivingMode.memberCount}
@@ -777,7 +895,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                     {/* Show Search Results Grid if searching or filtering */}
                     {(searchQuery || activeFilters.size > 0) ? (
                         <div style={{ padding: '0 20px' }}>
-                            <h3 style={{ marginBottom: 16, fontSize: 16, fontWeight: 700, color: 'var(--text-secondary)' }}>
+                            <h3 style={{ marginBottom: 16, fontSize: 20, fontWeight: 400, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
                                 {(filteredRoutes || []).length} Results
                             </h3>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
@@ -1020,16 +1138,20 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
             </div>
 
 
+            {/* ─── Convoy Member List REMOVED (Moved to Unified Panel) ─── */}
+
+
+
             {/* ─── Re-center (Bottom Left) ─── */}
             <div style={{
                 position: 'absolute',
-                bottom: drivingMode ? 30 : (isSheetOpen ? 320 : 110),
+                bottom: showConvoyPanel ? 320 : (drivingMode ? 30 : (isSheetOpen ? 320 : 110)),
                 left: 20,
                 zIndex: 'var(--z-overlay)',
                 transition: 'all 0.3s ease',
-                opacity: !drivingMode && !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 1 : 0,
-                transform: !drivingMode && !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 'scale(1)' : 'scale(0.8)',
-                pointerEvents: !drivingMode && !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 'auto' : 'none'
+                opacity: !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 1 : 0,
+                transform: !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 'scale(1)' : 'scale(0.8)',
+                pointerEvents: !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 'auto' : 'none'
             }}>
                 <button
                     className="map-control-btn"
@@ -1040,77 +1162,60 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                 </button>
             </div>
 
-            {/* ─── Trip Recorder (Above Squad) ─── */}
-            <div style={{
-                position: 'absolute',
-                bottom: drivingMode ? 90 : (isSheetOpen ? 380 : 170),
-                right: 20,
-                zIndex: 'var(--z-overlay)',
-                transition: 'all 0.3s ease',
-                display: drivingMode ? 'flex' : 'none',
-                alignItems: 'center',
-                justifyContent: 'flex-end'
-            }}>
-                {recordingState === 'idle' ? (
+            {/* ─── PPT Button (Bottom Center, above ETA) ─── */}
+            {drivingMode && drivingMode.memberCount > 0 && (
+                <div style={{
+                    position: 'absolute',
+                    bottom: 110,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 'var(--z-overlay)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
+                }}>
                     <button
-                        className="map-control-btn"
-                        onClick={() => setRecordingState('recording')}
-                        title="Start Recording Trip"
-                        style={{ color: '#ff1744' }}
+                        onClick={() => {
+                            if (!isPTTActive) {
+                                setIsPTTActive(true)
+                                setPttDuration(0)
+                            } else {
+                                setIsPTTActive(false)
+                            }
+                        }}
+                        style={{
+                            width: 64, height: 64,
+                            borderRadius: '50%',
+                            background: isPTTActive ? '#00e676' : 'rgba(20, 20, 20, 0.8)',
+                            border: `2px solid ${isPTTActive ? '#00e676' : 'rgba(255,255,255,0.2)'}`,
+                            color: isPTTActive ? 'black' : 'white',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer',
+                            backdropFilter: 'blur(12px)',
+                            boxShadow: isPTTActive ? '0 0 20px rgba(0, 230, 118, 0.4)' : '0 4px 12px rgba(0,0,0,0.3)',
+                            transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            transform: isPTTActive ? 'scale(1.1)' : 'scale(1)'
+                        }}
                     >
-                        <Circle fill="#ff1744" size={20} />
+                        <Mic size={28} fill={isPTTActive ? 'black' : 'none'} />
                     </button>
-                ) : (
-                    <div style={{
-                        background: 'rgba(20, 20, 20, 0.8)',
-                        backdropFilter: 'blur(12px)',
-                        borderRadius: 32,
-                        padding: '6px 6px 6px 16px',
-                        display: 'flex', alignItems: 'center', gap: 12,
-                        border: '1px solid rgba(255, 23, 68, 0.3)',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
-                    }}>
+                    {isPTTActive && (
                         <div style={{
-                            fontFamily: 'monospace', fontSize: 14, fontWeight: 700,
-                            color: '#ff1744', display: 'flex', alignItems: 'center', gap: 6
+                            background: 'rgba(0, 230, 118, 0.9)',
+                            color: 'black',
+                            padding: '4px 12px',
+                            borderRadius: 12,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            fontFamily: 'monospace',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            animation: 'fadeIn 0.2s ease'
                         }}>
-                            <div style={{
-                                width: 8, height: 8, borderRadius: '50%', background: '#ff1744',
-                                animation: recordingState === 'recording' ? 'pulse 1.5s infinite' : 'none',
-                                opacity: recordingState === 'paused' ? 0.5 : 1
-                            }} />
-                            {formatDuration(recordingDuration)}
+                            {new Date(pttDuration * 1000).toISOString().substr(14, 5)}
                         </div>
+                    )}
+                </div>
+            )}
 
-                        <div style={{ display: 'flex', gap: 4 }}>
-                            <button
-                                onClick={() => setRecordingState(prev => prev === 'recording' ? 'paused' : 'recording')}
-                                style={{
-                                    width: 32, height: 32, borderRadius: '50%',
-                                    background: 'rgba(255,255,255,0.1)',
-                                    border: 'none', color: 'white',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                {recordingState === 'recording' ? <Pause size={14} fill="white" /> : <Play size={14} fill="white" />}
-                            </button>
-                            <button
-                                onClick={handleStopRecording}
-                                style={{
-                                    width: 32, height: 32, borderRadius: '50%',
-                                    background: '#ff1744',
-                                    border: 'none', color: 'white',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                <Square size={14} fill="white" />
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
+
 
             {/* ─── Save Trip Modal ─── */}
             {showSaveModal && (
@@ -1220,6 +1325,161 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                 </div>
             )}
 
+            {/* ─── Recenter Button (Driving Mode Only) ─── */}
+            {drivingMode && showRecenterBtn && (
+                <div style={{
+                    position: 'absolute',
+                    bottom: 140, // Above ETA panel
+                    left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 'var(--z-overlay)',
+                    animation: 'slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                }}>
+                    <button
+                        onClick={handleRecenter}
+                        style={{
+                            background: 'var(--surface-card)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 32,
+                            padding: '10px 20px',
+                            color: 'white',
+                            fontSize: 13, fontWeight: 600,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                            cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: 8
+                        }}
+                    >
+                        <Navigation size={16} fill="white" /> Recenter
+                    </button>
+                </div>
+            )}
+
+            {/* ─── Right Side Control Stack (Squad + Trip Recorder) ─── */}
+            <div style={{
+                position: 'absolute',
+                bottom: 120,
+                right: 20,
+                zIndex: 'var(--z-overlay)',
+                display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'flex-end'
+            }}>
+                {/* 1. Squad Button */}
+                {(!drivingMode || true) && (
+                    <button
+                        className={`map-control-btn ${(squadEnabled || (drivingMode && drivingMode.memberCount > 0)) ? 'active-squad' : ''}`}
+                        onClick={() => {
+                            // If active, ask to leave
+                            if (squadEnabled || (drivingMode && drivingMode.memberCount > 0)) {
+                                setShowLeaveModal(true)
+                            } else {
+                                setShowSquadModal(true)
+                            }
+                        }}
+                        style={{
+                            width: 48, height: 48, borderRadius: '50%',
+                            background: (squadEnabled || (drivingMode && drivingMode.memberCount > 0)) ? 'rgba(0, 230, 118, 0.15)' : 'rgba(20, 20, 20, 0.8)',
+                            backdropFilter: 'blur(12px)',
+                            border: `1px solid ${(squadEnabled || (drivingMode && drivingMode.memberCount > 0)) ? '#00e676' : 'rgba(255,255,255,0.15)'}`,
+                            color: (squadEnabled || (drivingMode && drivingMode.memberCount > 0)) ? '#00e676' : 'white',
+                            display: (viewMode === 'list' || (!drivingMode && (isSheetOpen || selectedPOI || activeNavRoute || routeLoading))) ? 'none' : 'flex',
+                            alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                            position: 'relative'
+                        }}
+                        title="Squad"
+                    >
+                        <Users size={20} />
+                        {(drivingMode && drivingMode.memberCount > 0) && (
+                            <div style={{
+                                position: 'absolute', top: -4, right: -4,
+                                background: '#00e676', color: 'black',
+                                fontSize: 10, fontWeight: 800,
+                                minWidth: 16, height: 16, borderRadius: 8,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                border: '2px solid rgba(20,20,20,1)'
+                            }}>
+                                {drivingMode.memberCount}
+                            </div>
+                        )}
+                    </button>
+                )}
+
+                {/* 2. Trip Recorder (Moved here) */}
+                {drivingMode && (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+                        animation: 'slideInRight 0.3s ease'
+                    }}>
+                        {recordingState === 'idle' ? (
+                            <button
+                                className="map-control-btn"
+                                onClick={() => setRecordingState('recording')}
+                                title="Start Recording Trip"
+                                style={{
+                                    width: 48, height: 48, borderRadius: '50%',
+                                    background: 'rgba(20, 20, 20, 0.8)',
+                                    border: '1px solid rgba(255,255,255,0.15)',
+                                    color: '#ff1744',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    backdropFilter: 'blur(12px)',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+                                }}
+                            >
+                                <Circle fill="#ff1744" size={20} />
+                            </button>
+                        ) : (
+                            <div style={{
+                                background: 'rgba(20, 20, 20, 0.8)',
+                                backdropFilter: 'blur(12px)',
+                                borderRadius: 32,
+                                padding: '6px 6px 6px 16px',
+                                display: 'flex', alignItems: 'center', gap: 12,
+                                border: '1px solid rgba(255, 23, 68, 0.3)',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
+                            }}>
+                                <div style={{
+                                    fontFamily: 'monospace', fontSize: 14, fontWeight: 700,
+                                    color: '#ff1744', display: 'flex', alignItems: 'center', gap: 6
+                                }}>
+                                    <div style={{
+                                        width: 8, height: 8, borderRadius: '50%', background: '#ff1744',
+                                        animation: recordingState === 'recording' ? 'pulse 1.5s infinite' : 'none',
+                                        opacity: recordingState === 'paused' ? 0.5 : 1
+                                    }} />
+                                    {formatDuration(recordingDuration)}
+                                </div>
+
+                                <div style={{ display: 'flex', gap: 4 }}>
+                                    <button
+                                        onClick={() => setRecordingState(prev => prev === 'recording' ? 'paused' : 'recording')}
+                                        style={{
+                                            width: 32, height: 32, borderRadius: '50%',
+                                            background: 'rgba(255,255,255,0.1)',
+                                            border: 'none', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        {recordingState === 'recording' ? <Pause size={14} fill="white" /> : <Play size={14} fill="white" />}
+                                    </button>
+                                    <button
+                                        onClick={handleStopRecording}
+                                        style={{
+                                            width: 32, height: 32, borderRadius: '50%',
+                                            background: '#ff1744',
+                                            border: 'none', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <Square size={14} fill="white" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
             {/* ─── Route Loading Indicator ─── */}
             {routeLoading && (
                 <div style={{
@@ -1263,54 +1523,6 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                     userLocation={userLocation}
                 />
             )}
-
-            {/* ─── Squad Button (Bottom Right) ─── */}
-            <div style={{
-                position: 'absolute',
-                bottom: drivingMode ? 30 : (isSheetOpen ? 320 : 110),
-                right: 20,
-                zIndex: 'var(--z-overlay)',
-                transition: 'bottom 0.3s ease',
-                display: viewMode === 'list' || (!drivingMode && (isSheetOpen || selectedPOI || activeNavRoute || routeLoading)) ? 'none' : 'flex',
-                alignItems: 'center', gap: 8
-            }}>
-                <button
-                    className={`map-control-btn ${squadEnabled ? 'active-squad' : ''}`}
-                    onClick={() => {
-                        // Toggle squad mode
-                        // If driving, we can toggle sharing on/off
-                        // If not driving, we request legacy convoy (or just toggle)
-                        if (squadEnabled) {
-                            setSquadEnabled(false)
-                            setToastMessage('Live location sharing disabled')
-                            setShowToast(true)
-                            setTimeout(() => setShowToast(false), 5000)
-                        } else {
-                            setShowSquadModal(true)
-                        }
-                    }}
-                    style={squadEnabled ? { color: '#00e676', borderColor: '#00e676', background: 'rgba(0, 230, 118, 0.12)', boxShadow: '0 0 12px rgba(0, 230, 118, 0.3)' } : {}}
-                    title="Squad"
-                >
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Users size={20} />
-                        {(drivingMode && drivingMode.memberCount > 0) && (
-                            <div style={{
-                                position: 'absolute', top: -8, right: -10,
-                                background: '#00e676', color: 'black',
-                                fontSize: 11, fontWeight: 800,
-                                minWidth: 18, height: 18, borderRadius: 9,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                border: '2px solid rgba(20,20,20,1)',
-                                padding: '0 4px',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                            }}>
-                                {drivingMode.memberCount}
-                            </div>
-                        )}
-                    </div>
-                </button>
-            </div>
 
             {/* ─── Squad GDPR Modal ─── */}
             {showSquadModal && (
@@ -1445,7 +1657,9 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                                 ...approachGeometry.map(pt => ({ lat: pt[0], lng: pt[1] })),
                                 ...(route.path || [])
                             ]
-                            if (allPoints.length > 0) {
+                            // Only fly to target if NOT in driving mode (or if starting fresh)
+                            // User requested "no zoom out effect" during active navi
+                            if (allPoints.length > 0 && !drivingMode) {
                                 setFlyToTarget({
                                     path: allPoints,
                                     paddingOptions: { paddingTopLeft: [50, 50], paddingBottomRight: [50, 120] }
@@ -1608,9 +1822,75 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                     }}
                 />
             )}
+            {/* ─── Leave Squad Confirmation Modal ─── */}
+            {showLeaveModal && (
+                <div className="squad-modal-overlay">
+                    <div className="squad-modal">
+                        <Users size={48} color="#ff4444" style={{ marginBottom: 16 }} />
+                        <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12, color: 'white' }}>Leave Squad?</h3>
+                        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 24 }}>
+                            You are about to leave the convoy and return to solo navigation. Use the Squad button to rejoin later.
+                        </p>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                            <button
+                                onClick={() => setShowLeaveModal(false)}
+                                className="btn-glass"
+                                style={{ flex: 1, justifyContent: 'center', height: 44 }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setSquadEnabled(false)
+                                    // Reset/Downgrade driving mode if needed, or just clear members
+                                    if (drivingMode) {
+                                        // keeping driving mode but removing squad status effectively
+                                        // In a real app, we'd notify server.
+                                    }
+                                    setShowLeaveModal(false)
+                                    setToastMessage('Left squad')
+                                    setShowToast(true)
+                                    setTimeout(() => setShowToast(false), 3000)
+                                }}
+                                className="btn-primary"
+                                style={{ flex: 1, justifyContent: 'center', height: 44, background: '#ff4444', borderColor: '#ff4444' }}
+                            >
+                                Leave
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ─── Minimalist Member HUD (Top Left, below TBT) ─── */}
+            {drivingMode && (squadEnabled || (drivingMode && drivingMode.memberCount > 0)) && (
+                <div style={{
+                    position: 'absolute',
+                    top: 160, // Below TurnByTurnPanel
+                    left: 20,
+                    zIndex: 'var(--z-overlay)',
+                    display: 'flex', flexDirection: 'column', gap: 6,
+                    pointerEvents: 'none'
+                }}>
+                    {/* Mock Members for Demo */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                        <span style={{ color: 'white', fontWeight: 600, fontSize: 18, fontFamily: 'var(--font-display)' }}>Max</span>
+                        <span style={{ color: '#ff6d00', fontWeight: 700, fontSize: 18, fontFamily: 'monospace' }}>5m</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                        <span style={{ color: 'white', fontWeight: 600, fontSize: 18, fontFamily: 'var(--font-display)' }}>Anna</span>
+                        <span style={{ color: '#ff6d00', fontWeight: 700, fontSize: 18, fontFamily: 'monospace' }}>25m</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                        <span style={{ color: 'white', fontWeight: 600, fontSize: 18, fontFamily: 'var(--font-display)' }}>Eric</span>
+                        <span style={{ color: '#ff6d00', fontWeight: 700, fontSize: 18, fontFamily: 'monospace' }}>30m</span>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
+
 
 // ─── Helper: Category Row ───
 const RouteCategoryRow = ({ title, routes, onRouteClick, showCreateCard, onCreateRoute, createCardPosition = 'start' }) => {
@@ -1644,7 +1924,7 @@ const RouteCategoryRow = ({ title, routes, onRouteClick, showCreateCard, onCreat
     return (
         <div>
             <div style={{ padding: '0 20px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: 'white' }}>{title}</h3>
+                <h3 style={{ fontSize: 20, fontWeight: 500, color: 'white', fontFamily: 'var(--font-display)' }}>{title}</h3>
             </div>
             <div className="no-scrollbar" style={{
                 display: 'flex', gap: 16,
@@ -1663,6 +1943,7 @@ const RouteCategoryRow = ({ title, routes, onRouteClick, showCreateCard, onCreat
 
                 {showCreateCard && createCardPosition === 'end' && CreateCard}
             </div>
+
         </div>
     )
 }
