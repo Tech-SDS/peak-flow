@@ -10,7 +10,7 @@ import L from 'leaflet'
  * 3. Caches the result in a module-level Map.
  */
 
-const ORS_ENDPOINT = '/ors-proxy/v2/directions/driving-car/geojson'
+const ORS_ENDPOINT = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson'
 const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY
 const DEBOUNCE_MS = 500
 

@@ -5,7 +5,7 @@
  * the geometry (as Leaflet [lat, lng] positions), distance, and duration.
  */
 
-const OSRM_ENDPOINT = '/osrm-proxy/route/v1/driving'
+const OSRM_ENDPOINT = 'https://router.project-osrm.org/route/v1/driving'
 
 // Cache to avoid redundant API calls
 const navRouteCache = new Map()
