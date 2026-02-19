@@ -1,5 +1,5 @@
 // Basic Service Worker for PWA installability
-const CACHE_NAME = 'peak-flow-v1';
+const CACHE_NAME = 'peak-flow-v2';
 const urlsToCache = [
     '/',
     '/index.html',
