@@ -61,7 +61,17 @@ const MapController = ({ flyToTarget, userLocation }) => {
             const { start } = flyToTarget.coordinates
             map.flyTo([start.lat, start.lng], 13, { duration: 1.2 })
         } else if (flyToTarget?.lat && flyToTarget?.lng) {
-            map.flyTo([flyToTarget.lat, flyToTarget.lng], flyToTarget.zoom || 14, { duration: 1.2 })
+            if (flyToTarget.isDrivingTrack) {
+                const targetPoint = map.project([flyToTarget.lat, flyToTarget.lng], flyToTarget.zoom || 14)
+                // Shift target point UP by 25% of map height so CCP renders lower (at 25% from bottom)
+                const mapHeight = map.getSize().y || window.innerHeight
+                targetPoint.y -= mapHeight * 0.25
+                const offsetLatLng = map.unproject(targetPoint, flyToTarget.zoom || 14)
+                // Use setView for continuous tracking updates to avoid flyTo animation cancellation
+                map.setView(offsetLatLng, flyToTarget.zoom || 14, { animate: true, duration: 0.8 })
+            } else {
+                map.flyTo([flyToTarget.lat, flyToTarget.lng], flyToTarget.zoom || 14, { duration: 1.2 })
+            }
         }
     }, [flyToTarget, map])
 
@@ -210,6 +220,10 @@ const MapContainerComponent = ({ routes = [], routeGeometry, flyToTarget, onRout
             (error) => {
                 console.warn("Error getting user location:", error)
                 setLocationError(true)
+                // Fallback to Munich so users without GPS can still view local features
+                const fallbackLoc = { lat: 48.1371, lng: 11.5754 }
+                setUserLocation(fallbackLoc)
+                if (onLocationFound) onLocationFound(fallbackLoc)
             },
             { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
         )
@@ -266,8 +280,7 @@ const MapContainerComponent = ({ routes = [], routeGeometry, flyToTarget, onRout
                     </>
                 )}
 
-                <MapEvents onMapMove={onMapMove} onMapClick={onMapClick} />
-                <MapEvents onMapMove={onMapMove} onMapClick={onMapClick} />
+                <MapEvents onMapMove={onMapMove} onMapClick={onMapClick} onManualPan={onManualPan} />
 
                 {/* Interactive Route Layer */}
                 <RouteLayer routes={routes} onRouteTap={onRouteTap} />

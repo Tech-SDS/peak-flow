@@ -18,7 +18,7 @@ const formatTime = (minutes) => {
     return `${hrs}h ${mins}min`
 }
 
-const TurnByTurnPanel = ({ route, onEndDrive, onAddStop, style }) => {
+const TurnByTurnPanel = ({ route, onEndDrive, onAddStop, style, showControls = true }) => {
     // Mock Step Data (fixed for demo since ORS route doesn't easily give steps without parsing)
     // In a real app, we'd parse `route.segments[0].steps[0]`
     const nextStep = {
@@ -88,8 +88,10 @@ const TurnByTurnPanel = ({ route, onEndDrive, onAddStop, style }) => {
             <div style={{
                 position: 'absolute',
                 bottom: 120, left: 20,
-                pointerEvents: 'auto',
-                zIndex: 10
+                pointerEvents: showControls ? 'auto' : 'none',
+                zIndex: 10,
+                opacity: showControls ? 1 : 0,
+                transition: 'opacity 0.3s ease'
             }}>
                 <button
                     onClick={onAddStop}

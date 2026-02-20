@@ -314,7 +314,7 @@ const RoutePlanningPanel = ({ route, routes, onSelectRoute, onStart, onCancel, o
                 )}
 
                 {/* Unified Route Summary */}
-                <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 20 }} className="no-scrollbar">
+                <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 20, minHeight: 0 }} className="no-scrollbar">
                     <RouteSummaryCard
                         route={route}
                         userLocation={userLocation}
@@ -386,7 +386,8 @@ const RoutePlanningPanel = ({ route, routes, onSelectRoute, onStart, onCancel, o
                         padding: '0 0 20px',
                         display: 'flex', gap: 10,
                         alignItems: 'center',
-                        marginTop: 'auto'
+                        marginTop: 'auto',
+                        flexShrink: 0
                     }}>
                         <button onClick={onStart} className="btn-primary" style={{
                             flex: 2, padding: '12px 16px',

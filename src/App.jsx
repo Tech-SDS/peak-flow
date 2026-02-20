@@ -105,6 +105,7 @@ function App() {
     const handleDiscoverEndDrive = useCallback(() => {
         setDrivingMode(null)
         setInitialDiscoverRoute(null)
+        setActiveConvoy(null)
         setActiveTab('discover')
     }, [])
 
@@ -167,9 +168,9 @@ function App() {
                     drivingMode={drivingMode}
                     onStartDrive={handleStartDrive}
                     onEndDrive={handleDiscoverEndDrive}
-                    onToggleNav={setIsNavHidden}
                     squadEnabled={squadEnabled}
                     setSquadEnabled={setSquadEnabled}
+                    onLeaveConvoy={() => setActiveConvoy(null)}
                 />
             )
         }

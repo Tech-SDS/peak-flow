@@ -224,7 +224,8 @@ const RouteOverviewSheet = ({
                     flex: 1,
                     overflowY: isExpanded ? 'auto' : 'hidden',
                     padding: '0 20px 20px',
-                    position: 'relative' // For absolute positioning of fade
+                    position: 'relative', // For absolute positioning of fade
+                    minHeight: 0
                 }} className="no-scrollbar">
                     {/* Fade Overlay for Collapsed State */}
                     {!isExpanded && (
@@ -316,7 +317,8 @@ const RouteOverviewSheet = ({
                     padding: '0 20px 20px',
                     display: 'flex', gap: 10,
                     alignItems: 'center',
-                    marginTop: 'auto' // Push to bottom if expanded
+                    marginTop: 'auto', // Push to bottom if expanded
+                    flexShrink: 0
                 }}>
                     {route.isGenerated ? (
                         <>
@@ -327,10 +329,19 @@ const RouteOverviewSheet = ({
                                 alert("Route saved to 'My Routes'")
                             }} className="btn-glass" style={{
                                 flex: 1, padding: '14px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                                 fontSize: 14, fontWeight: 600
                             }}>
-                                <Save size={18} /> Save
+                                <Save size={16} /> Save
+                            </button>
+
+                            {/* Create Convoy */}
+                            <button onClick={onFormConvoy} className="btn-glass" style={{
+                                flex: 1, padding: '14px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                fontSize: 14, fontWeight: 600
+                            }}>
+                                <Users size={16} /> Create convoy
                             </button>
 
                             {/* Start Navigation */}

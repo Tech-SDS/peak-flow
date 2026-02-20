@@ -67,14 +67,18 @@ const OmniSearch = ({ routes = [], onRouteSelect, onManualPlan, onAutoCreate, on
             <div style={{ display: 'flex', gap: 10, pointerEvents: 'auto', alignItems: 'stretch' }}>
 
                 {/* Search Bar Container */}
-                <div className="glass-overlay" style={{
+                <div style={{
                     flex: isFocused ? 1 : 3, // 100% when focused (since sibling hides), else 75%
                     padding: '12px 16px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 10,
                     transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                    border: isFocused ? '1px solid rgba(255,95,31,0.3)' : undefined
+                    background: 'var(--bg-glass)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    border: isFocused ? '1px solid var(--primary-apex)' : 'var(--border-glass)',
+                    borderRadius: 20
                 }}>
                     <Search size={18} color="var(--text-secondary)" />
                     <input

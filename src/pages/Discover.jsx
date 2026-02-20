@@ -43,12 +43,33 @@ const formatDictance = (meters) => {
 
 
 
-const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList, onSaveMyRoute, onSaveTrip, createMode, onResetCreateMode, initialRoute, onClearInitialRoute, onRequestConvoy, drivingMode, onStartDrive, onEndDrive, onToggleNav, squadEnabled, setSquadEnabled }) => {
+const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList, onSaveMyRoute, onSaveTrip, createMode, onResetCreateMode, initialRoute, onClearInitialRoute, onRequestConvoy, drivingMode, onStartDrive, onEndDrive, onToggleNav, squadEnabled, setSquadEnabled, onLeaveConvoy }) => {
     const [viewMode, setViewMode] = useState('map') // 'map' | 'list' | 'editor'
     const [returnToViewMode, setReturnToViewMode] = useState(null)
 
     const [userLocation, setUserLocation] = useState(null)
     const [allRoutes, setAllRoutes] = useState([...ROUTE_DATABASE])
+
+    const enrichedAllRoutes = useMemo(() => {
+        if (!userLocation) return allRoutes
+
+        return allRoutes.map(r => {
+            const startCoords = r.coordinates?.start
+            if (!startCoords) return r
+
+            const R = 6371 // Earth radius in km
+            const dLat = (startCoords.lat - userLocation.lat) * Math.PI / 180
+            const dLon = (startCoords.lng - userLocation.lng) * Math.PI / 180
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(startCoords.lat * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+            const d = R * c
+
+            return { ...r, distanceFromUser: d.toFixed(1) } // Add formatted distance
+        })
+    }, [allRoutes, userLocation])
 
     const displayMembers = useMemo(() => {
         if (drivingMode?.members) {
@@ -111,6 +132,27 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
     const [selectedDriver, setSelectedDriver] = useState(null)
     const [selectedPOI, setSelectedPOI] = useState(null)
     const [drivenCuratedRoute, setDrivenCuratedRoute] = useState(null) // curated route kept visible in orange during navigation
+
+    // ─── Active Navigation Controls State ───
+    const [showNavControls, setShowNavControls] = useState(false)
+    const [isNavOverview, setIsNavOverview] = useState(false)
+    const navControlsTimer = React.useRef(null)
+
+    const handleMapInteraction = useCallback(() => {
+        if (drivingMode) {
+            setShowNavControls(true)
+            if (navControlsTimer.current) clearTimeout(navControlsTimer.current)
+            navControlsTimer.current = setTimeout(() => {
+                setShowNavControls(false)
+            }, 5000)
+        }
+    }, [drivingMode])
+
+    useEffect(() => {
+        return () => {
+            if (navControlsTimer.current) clearTimeout(navControlsTimer.current)
+        }
+    }, [])
     // ─── Search State ───
     const [searchResults, setSearchResults] = useState([]) // Ensure initialized
     const [searchHistory, setSearchHistory] = useState(() => {
@@ -353,15 +395,17 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
 
     // Auto-zoom when driving mode starts and follow user if not panned
     useEffect(() => {
-        if (drivingMode && userLocation && !showRecenterBtn) {
+        if (drivingMode && userLocation) {
             setFlyToTarget({
                 lat: userLocation.lat,
                 lng: userLocation.lng,
                 zoom: 18, // Close-up for driving
-                pitch: 60 // Tilt for 3D effect
+                pitch: 60, // Tilt for 3D effect
+                isDrivingTrack: true // Offset the marker to bottom 25% of screen
             })
+            setShowRecenterBtn(false)
         }
-    }, [drivingMode, userLocation, showRecenterBtn])
+    }, [drivingMode, userLocation])
 
     // Calculate Approach Route if requested
     useEffect(() => {
@@ -386,13 +430,13 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                         destinationName: `Start: ${drivingMode.title}`
                     })
 
-                    // Auto-zoom to approach route
-                    if (bestRoute?.geometry) {
+                    // Auto-zoom to approach route removed per user request: "no zoom-in out effect"
+                    /* if (bestRoute?.geometry) {
                         setFlyToTarget({
                             path: bestRoute.geometry.map(pt => ({ lat: pt[0], lng: pt[1] })),
                             paddingOptions: { paddingTopLeft: [50, 50], paddingBottomRight: [50, 400] }
                         })
-                    }
+                    } */
                 } catch (err) {
                     console.error('Failed to calculate approach route:', err)
                 } finally {
@@ -416,7 +460,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
             return drivenCuratedRoute ? [drivenCuratedRoute] : []
         }
 
-        let routes = allRoutes
+        let routes = enrichedAllRoutes
 
         // 1. Text Search
         if (searchQuery.trim()) {
@@ -470,29 +514,10 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
         }
 
         // 3. Calculate Distance from User
-        if (userLocation) {
-            routes = routes.map(r => {
-                const startCoords = r.coordinates?.start
-                if (!startCoords) return r
-
-                const R = 6371 // Earth radius in km
-                const dLat = (startCoords.lat - userLocation.lat) * Math.PI / 180
-                const dLon = (startCoords.lng - userLocation.lng) * Math.PI / 180
-                const a =
-                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(startCoords.lat * Math.PI / 180) *
-                    Math.sin(dLon / 2) * Math.sin(dLon / 2)
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-                const d = R * c
-
-                return { ...r, distanceFromUser: d.toFixed(1) } // Add formatted distance
-            })
-            // Optional: Sort by proximity if searching "Nearby"? 
-            // For now, just enriching the data.
-        }
+        // (Distance is now precalculated in enrichedAllRoutes)
 
         return routes
-    }, [searchQuery, activeFilters, allRoutes, viewMode, generatedRoute, drivingMode, activeNavRoute, routeLoading, selectedPOI, createMode, drivenCuratedRoute, userLocation])
+    }, [searchQuery, activeFilters, enrichedAllRoutes, viewMode, generatedRoute, drivingMode, activeNavRoute, routeLoading, selectedPOI, createMode, drivenCuratedRoute, userLocation])
 
     // DEBUG LOGGING - SAFELY PLACED
     console.log('[Discover] Render State:', {
@@ -744,14 +769,15 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
 
 
     const handleManualPan = useCallback(() => {
-        if (drivingMode && !showRecenterBtn) {
+        if (!drivingMode && !showRecenterBtn) {
             setShowRecenterBtn(true)
         }
-    }, [drivingMode, showRecenterBtn])
+        handleMapInteraction()
+    }, [drivingMode, showRecenterBtn, handleMapInteraction])
 
     const handleRecenter = () => {
         if (userLocation) {
-            setFlyToTarget({ ...userLocation, zoom: 18, pitch: 60 })
+            setFlyToTarget({ ...userLocation, zoom: 15, pitch: 0 })
             setShowRecenterBtn(false)
         }
     }
@@ -775,6 +801,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                 onMapMove={handleMapMove}
                 selectedRouteId={selectedRoute?.id}
                 onManualPan={handleManualPan}
+                onMapClick={handleMapInteraction}
 
 
                 poiMarker={selectedPOI}
@@ -787,35 +814,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                 searchResults={searchResults}
                 onSearchResultClick={handleLocationSelect}
             />
-            {/* ─── Re-center Button (Driving Mode Only) ─── */}
-            {drivingMode && showRecenterBtn && (
-                <div style={{
-                    position: 'absolute',
-                    bottom: 140, // Above ETA panel (approx 100px height) + padding
-                    left: '50%', transform: 'translateX(-50%)',
-                    zIndex: 'var(--z-overlay)',
-                    animation: 'slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
-                }}>
-                    <button
-                        onClick={handleRecenter}
-                        style={{
-                            background: 'white',
-                            color: 'black',
-                            border: 'none',
-                            borderRadius: 24,
-                            padding: '10px 20px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                            fontSize: 14,
-                            fontWeight: 700,
-                            display: 'flex', alignItems: 'center', gap: 8,
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <span>Re-center</span>
-                        <Navigation size={16} fill="black" />
-                    </button>
-                </div>
-            )}
+            {/* Re-center Button removed from Driving Mode */}
 
             {/* ─── Driving Mode Header OR Turn-by-Turn ─── */}
             {drivingMode && (
@@ -824,6 +823,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                     {(activeNavRoute || drivingMode.duration || drivingMode.distance) ? (
                         <TurnByTurnPanel
                             route={activeNavRoute || drivingMode}
+                            showControls={showNavControls}
                             onEndDrive={() => {
                                 setActiveNavRoute(null)
                                 setSelectedPOI(null)
@@ -913,10 +913,10 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                         // Categorized View
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-                            {/* Category 1: Nearby top rated */}
+                            {/* Category 1: Nearby */}
                             <RouteCategoryRow
-                                title="Nearby top rated"
-                                routes={[...(allRoutes || [])].filter(r => r.distanceFromUser < 300).sort((a, b) => (b.hearts || 0) - (a.hearts || 0)).slice(0, 10)}
+                                title="Nearby"
+                                routes={[...(enrichedAllRoutes || [])].sort((a, b) => parseFloat(a.distanceFromUser || 9999) - parseFloat(b.distanceFromUser || 9999)).slice(0, 10)}
                                 onRouteClick={handleRouteTap}
                                 showCreateCard
                                 createCardPosition="end"
@@ -926,35 +926,35 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                             {/* Category 2: Relaxed Drives */}
                             <RouteCategoryRow
                                 title="Relaxed Drives"
-                                routes={[...(allRoutes || []).filter(r => r.curvinessIndex <= 2 || (r.scenic && r.curvinessIndex <= 3))].sort((a, b) => (a.duration || 0) - (b.duration || 0))}
+                                routes={[...(enrichedAllRoutes || []).filter(r => r.curvinessIndex <= 2 || (r.scenic && r.curvinessIndex <= 3))].sort((a, b) => parseFloat(a.distanceFromUser || 9999) - parseFloat(b.distanceFromUser || 9999))}
                                 onRouteClick={handleRouteTap}
                             />
 
                             {/* Category 3: Challenging Drives */}
                             <RouteCategoryRow
                                 title="Challenging Drives"
-                                routes={[...(allRoutes || []).filter(r => r.curvinessIndex >= 4 || r.technical)].sort((a, b) => (a.duration || 0) - (b.duration || 0))}
+                                routes={[...(enrichedAllRoutes || []).filter(r => r.curvinessIndex >= 4 || r.technical)].sort((a, b) => parseFloat(a.distanceFromUser || 9999) - parseFloat(b.distanceFromUser || 9999))}
                                 onRouteClick={handleRouteTap}
                             />
 
                             {/* Category 4: Quick escapes (1-2h) */}
                             <RouteCategoryRow
                                 title="Quick escapes"
-                                routes={[...(allRoutes || []).filter(r => r.duration >= 60 && r.duration <= 120)].sort((a, b) => (a.duration || 0) - (b.duration || 0))}
+                                routes={[...(enrichedAllRoutes || []).filter(r => r.duration >= 60 && r.duration <= 120)].sort((a, b) => parseFloat(a.distanceFromUser || 9999) - parseFloat(b.distanceFromUser || 9999))}
                                 onRouteClick={handleRouteTap}
                             />
 
                             {/* Category 5: Fun with curves (4-5/5 curves) */}
                             <RouteCategoryRow
                                 title="Fun with curves"
-                                routes={[...(allRoutes || []).filter(r => r.curvinessIndex >= 4)].sort((a, b) => (b.curvinessIndex || 0) - (a.curvinessIndex || 0))}
+                                routes={[...(enrichedAllRoutes || []).filter(r => r.curvinessIndex >= 4)].sort((a, b) => parseFloat(a.distanceFromUser || 9999) - parseFloat(b.distanceFromUser || 9999))}
                                 onRouteClick={handleRouteTap}
                             />
 
                             {/* Category 6: Up and down (high elevation) */}
                             <RouteCategoryRow
                                 title="Up and down"
-                                routes={[...(allRoutes || []).filter(r => r.elevation?.gain > 500)].sort((a, b) => (b.elevation?.gain || 0) - (a.elevation?.gain || 0))}
+                                routes={[...(enrichedAllRoutes || []).filter(r => r.elevation?.gain > 500)].sort((a, b) => parseFloat(a.distanceFromUser || 9999) - parseFloat(b.distanceFromUser || 9999))}
                                 onRouteClick={handleRouteTap}
                             />
                         </div>
@@ -1115,7 +1115,9 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                 right: 20,
                 display: viewMode === 'list' ? 'none' : 'flex', flexDirection: 'column', gap: 12,
                 zIndex: 'var(--z-overlay)',
-                transition: 'top 0.3s ease'
+                transition: 'top 0.3s ease, opacity 0.3s ease',
+                opacity: (drivingMode && !showNavControls) ? 0 : 1,
+                pointerEvents: (drivingMode && !showNavControls) ? 'none' : 'auto'
             }}>
                 <button
                     className={`map-control-btn`}
@@ -1135,6 +1137,40 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                 >
                     {mapStyle === 'default' ? <Globe size={20} /> : <MapIcon size={20} />}
                 </button>
+
+                {/* ─── Route Overview Toggle ─── */}
+                {drivingMode && (
+                    <button
+                        className="map-control-btn"
+                        style={{
+                            background: 'rgba(20, 20, 20, 0.8)', color: 'white', border: '1px solid rgba(255,255,255,0.1)',
+                            width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', backdropFilter: 'blur(12px)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', transition: 'all 0.2s ease'
+                        }}
+                        onClick={() => {
+                            if (isNavOverview) {
+                                if (userLocation) {
+                                    setFlyToTarget({ lat: userLocation.lat, lng: userLocation.lng, zoom: 18, pitch: 60, isDrivingTrack: true })
+                                }
+                                setIsNavOverview(false)
+                            } else {
+                                const targetRoute = activeNavRoute || drivingMode
+                                if (targetRoute?.geometry) {
+                                    setFlyToTarget({ path: targetRoute.geometry.map(pt => ({ lat: pt[0], lng: pt[1] })), paddingOptions: { padding: [60, 60] } })
+                                } else if (targetRoute?.coordinates) {
+                                    if (targetRoute.coordinates.start) {
+                                        setFlyToTarget({ coordinates: targetRoute.coordinates })
+                                    }
+                                }
+                                setIsNavOverview(true)
+                            }
+                            handleMapInteraction()
+                        }}
+                        title={isNavOverview ? "Resume Navigation" : "Route Overview"}
+                    >
+                        {isNavOverview ? <Navigation size={18} /> : <MapIcon size={18} />}
+                    </button>
+                )}
             </div>
 
 
@@ -1145,13 +1181,13 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
             {/* ─── Re-center (Bottom Left) ─── */}
             <div style={{
                 position: 'absolute',
-                bottom: showConvoyPanel ? 320 : (drivingMode ? 30 : (isSheetOpen ? 320 : 110)),
+                bottom: isSheetOpen ? 320 : 110,
                 left: 20,
                 zIndex: 'var(--z-overlay)',
                 transition: 'all 0.3s ease',
-                opacity: !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 1 : 0,
-                transform: !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 'scale(1)' : 'scale(0.8)',
-                pointerEvents: !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 'auto' : 'none'
+                opacity: !drivingMode && !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 1 : 0,
+                transform: !drivingMode && !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 'scale(1)' : 'scale(0.8)',
+                pointerEvents: !drivingMode && !isSheetOpen && showRecenterBtn && viewMode === 'map' ? 'auto' : 'none'
             }}>
                 <button
                     className="map-control-btn"
@@ -1161,6 +1197,8 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                     <Crosshair size={20} />
                 </button>
             </div>
+
+
 
             {/* ─── PPT Button (Bottom Center, above ETA) ─── */}
             {drivingMode && drivingMode.memberCount > 0 && (
@@ -1325,33 +1363,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                 </div>
             )}
 
-            {/* ─── Recenter Button (Driving Mode Only) ─── */}
-            {drivingMode && showRecenterBtn && (
-                <div style={{
-                    position: 'absolute',
-                    bottom: 140, // Above ETA panel
-                    left: '50%', transform: 'translateX(-50%)',
-                    zIndex: 'var(--z-overlay)',
-                    animation: 'slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
-                }}>
-                    <button
-                        onClick={handleRecenter}
-                        style={{
-                            background: 'var(--surface-card)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: 32,
-                            padding: '10px 20px',
-                            color: 'white',
-                            fontSize: 13, fontWeight: 600,
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                            cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: 8
-                        }}
-                    >
-                        <Navigation size={16} fill="white" /> Recenter
-                    </button>
-                </div>
-            )}
+
 
             {/* ─── Right Side Control Stack (Squad + Trip Recorder) ─── */}
             <div style={{
@@ -1366,11 +1378,19 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                     <button
                         className={`map-control-btn ${(squadEnabled || (drivingMode && drivingMode.memberCount > 0)) ? 'active-squad' : ''}`}
                         onClick={() => {
-                            // If active, ask to leave
-                            if (squadEnabled || (drivingMode && drivingMode.memberCount > 0)) {
+                            if (drivingMode && drivingMode.memberCount > 0) {
+                                // Active Convoy Mode
                                 setShowLeaveModal(true)
                             } else {
-                                setShowSquadModal(true)
+                                // Discover Mode
+                                if (squadEnabled) {
+                                    setSquadEnabled(false) // Toggle off immediately
+                                    setToastMessage('Live location sharing disabled')
+                                    setShowToast(true)
+                                    setTimeout(() => setShowToast(false), 3000)
+                                } else {
+                                    setShowSquadModal(true)
+                                }
                             }
                         }}
                         style={{
@@ -1397,7 +1417,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 border: '2px solid rgba(20,20,20,1)'
                             }}>
-                                {drivingMode.memberCount}
+                                {drivingMode.members?.length || drivingMode.memberCount}
                             </div>
                         )}
                     </button>
@@ -1560,6 +1580,45 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                 </div>
             )}
 
+            {/* ─── Leave Convoy Modal ─── */}
+            {showLeaveModal && (
+                <div className="squad-modal-overlay">
+                    <div className="squad-modal">
+                        <Users size={48} color="#ff1744" style={{ marginBottom: 16 }} />
+                        <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12, color: 'white' }}>Leave Convoy?</h3>
+                        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 24 }}>
+                            You will stop sharing your location and will no longer see other convoy members. Navigation will continue in solo mode.
+                        </p>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                            <button
+                                onClick={() => setShowLeaveModal(false)}
+                                className="btn-glass"
+                                style={{ flex: 1, justifyContent: 'center', height: 44 }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowLeaveModal(false)
+                                    setSquadEnabled(false)
+                                    if (onStartDrive && drivingMode) {
+                                        onStartDrive({ ...drivingMode, memberCount: 0, members: [] }) // Restart drive without members
+                                    }
+                                    if (onLeaveConvoy) onLeaveConvoy()
+                                    setToastMessage('Left convoy')
+                                    setShowToast(true)
+                                    setTimeout(() => setShowToast(false), 3000)
+                                }}
+                                className="btn-primary"
+                                style={{ flex: 1, justifyContent: 'center', height: 44, background: '#ff1744', boxShadow: '0 4px 16px rgba(255, 23, 68, 0.4)' }}
+                            >
+                                Leave
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* ─── Driver Convoy Request Modal ─── */}
             {selectedDriver && (
                 <div className="squad-modal-overlay">
@@ -1657,14 +1716,13 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                                 ...approachGeometry.map(pt => ({ lat: pt[0], lng: pt[1] })),
                                 ...(route.path || [])
                             ]
-                            // Only fly to target if NOT in driving mode (or if starting fresh)
                             // User requested "no zoom out effect" during active navi
-                            if (allPoints.length > 0 && !drivingMode) {
+                            /* if (allPoints.length > 0 && !drivingMode) {
                                 setFlyToTarget({
                                     path: allPoints,
                                     paddingOptions: { paddingTopLeft: [50, 50], paddingBottomRight: [50, 120] }
                                 })
-                            }
+                            } */
 
                             // Go directly into driving mode — skip RoutePlanningPanel
                             // Go directly into driving mode — skip RoutePlanningPanel
@@ -1822,45 +1880,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                     }}
                 />
             )}
-            {/* ─── Leave Squad Confirmation Modal ─── */}
-            {showLeaveModal && (
-                <div className="squad-modal-overlay">
-                    <div className="squad-modal">
-                        <Users size={48} color="#ff4444" style={{ marginBottom: 16 }} />
-                        <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12, color: 'white' }}>Leave Squad?</h3>
-                        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 24 }}>
-                            You are about to leave the convoy and return to solo navigation. Use the Squad button to rejoin later.
-                        </p>
-                        <div style={{ display: 'flex', gap: 12 }}>
-                            <button
-                                onClick={() => setShowLeaveModal(false)}
-                                className="btn-glass"
-                                style={{ flex: 1, justifyContent: 'center', height: 44 }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setSquadEnabled(false)
-                                    // Reset/Downgrade driving mode if needed, or just clear members
-                                    if (drivingMode) {
-                                        // keeping driving mode but removing squad status effectively
-                                        // In a real app, we'd notify server.
-                                    }
-                                    setShowLeaveModal(false)
-                                    setToastMessage('Left squad')
-                                    setShowToast(true)
-                                    setTimeout(() => setShowToast(false), 3000)
-                                }}
-                                className="btn-primary"
-                                style={{ flex: 1, justifyContent: 'center', height: 44, background: '#ff4444', borderColor: '#ff4444' }}
-                            >
-                                Leave
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {/* ─── Minimalist Member HUD (Top Left, below TBT) ─── */}
             {drivingMode && (squadEnabled || (drivingMode && drivingMode.memberCount > 0)) && (
@@ -1872,19 +1892,12 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                     display: 'flex', flexDirection: 'column', gap: 6,
                     pointerEvents: 'none'
                 }}>
-                    {/* Mock Members for Demo */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                        <span style={{ color: 'white', fontWeight: 600, fontSize: 18, fontFamily: 'var(--font-display)' }}>Max</span>
-                        <span style={{ color: '#ff6d00', fontWeight: 700, fontSize: 18, fontFamily: 'monospace' }}>5m</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                        <span style={{ color: 'white', fontWeight: 600, fontSize: 18, fontFamily: 'var(--font-display)' }}>Anna</span>
-                        <span style={{ color: '#ff6d00', fontWeight: 700, fontSize: 18, fontFamily: 'monospace' }}>25m</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                        <span style={{ color: 'white', fontWeight: 600, fontSize: 18, fontFamily: 'var(--font-display)' }}>Eric</span>
-                        <span style={{ color: '#ff6d00', fontWeight: 700, fontSize: 18, fontFamily: 'monospace' }}>30m</span>
-                    </div>
+                    {displayMembers.filter(m => m.id !== '1' && m.name !== 'You').map((m, idx) => (
+                        <div key={m.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 12, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                            <span style={{ color: 'white', fontWeight: 600, fontSize: 18, fontFamily: 'var(--font-display)' }}>{m.name}</span>
+                            <span style={{ color: '#ff6d00', fontWeight: 700, fontSize: 18, fontFamily: 'monospace' }}>{m.distance}m</span>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>
