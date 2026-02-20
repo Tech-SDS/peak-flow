@@ -10,6 +10,21 @@
   <link rel="icon" type="image/png" href="./icon.png" />
   <link rel="apple-touch-icon" href="./icon.png" />
   <script>
+    // Global error listener to recover from chunk load errors causing PWA black screens
+    window.addEventListener('error', function (e) {
+      if (e.message && (e.message.indexOf('Failed to fetch dynamically imported module') !== -1 || e.message.indexOf('Importing a module script failed') !== -1)) {
+        console.warn('Chunk load error detected, auto-reloading to break cache...');
+        window.location.reload(true);
+      }
+    });
+    window.addEventListener('unhandledrejection', function (event) {
+      if (event.reason && (event.reason.name === 'ChunkLoadError' || (event.reason.message && event.reason.message.includes('fetch dynamically imported module')))) {
+        console.warn('Chunk promise rejection detected, auto-reloading...');
+        window.location.reload(true);
+      }
+    });
+  </script>
+  <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         // Use relative path for SW or respecting base
