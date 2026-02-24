@@ -78,18 +78,25 @@ export async function calculateRoute(origin, destination, signal) {
             routes = routes.slice(0, 3)
         }
 
-        // 3. Assign standardized labels and curviness
-        // Fastest
-        routes[0].label = 'Fastest'
-        routes[0].curvinessIndex = 2
+        // 3. Assign standardized labels and curviness in the requested order (Curvy -> Balanced -> Fastest)
+        // Since routes were sorted by duration (ascending), routes[0] is fastest and routes[2] is slowest (curvy).
+        // Let's explicitly rebuild the array in the desired order.
+        const fastestRoute = routes[0]
+        const balancedRoute = routes[1]
+        const curvyRoute = routes[2]
 
-        // Balanced
-        routes[1].label = 'Balanced'
-        routes[1].curvinessIndex = 3
+        // Reassign
+        curvyRoute.label = 'Curvy'
+        curvyRoute.curvinessIndex = 5
 
-        // Curvy (always the slowest/most curves)
-        routes[2].label = 'Curvy'
-        routes[2].curvinessIndex = 5
+        balancedRoute.label = 'Balanced'
+        balancedRoute.curvinessIndex = 3
+
+        fastestRoute.label = 'Fastest'
+        fastestRoute.curvinessIndex = 2
+
+        // Ensure the order is exactly Curvy, Balanced, Fast
+        routes = [curvyRoute, balancedRoute, fastestRoute]
 
         navRouteCache.set(key, routes)
         return routes

@@ -33,7 +33,13 @@ function App() {
     useEffect(() => { localStorage.setItem('pf_favorites', JSON.stringify([...favorites])) }, [favorites])
     useEffect(() => { localStorage.setItem('pf_bucketList', JSON.stringify([...bucketList])) }, [bucketList])
     useEffect(() => { localStorage.setItem('pf_myRoutes', JSON.stringify(myRoutes)) }, [myRoutes])
-    useEffect(() => { localStorage.setItem('pf_trips', JSON.stringify(trips)) }, [trips])
+    useEffect(() => {
+        if (trips.length === 0) {
+            setTrips([...MOCK_TRIPS].slice(0, 2))
+        } else {
+            localStorage.setItem('pf_trips', JSON.stringify(trips))
+        }
+    }, [trips])
 
     const toggleFavorite = (id) => {
         setFavorites(prev => {

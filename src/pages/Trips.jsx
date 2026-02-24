@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Clock, Heart, Star, Route, Trash2 } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { Clock, Heart, Star, Route, Trash2, Share2, X } from 'lucide-react'
 import TripCard from '../components/TripCard'
 import RouteCard from '../components/RouteCard'
 import PerformancePanel from '../components/PerformancePanel'
@@ -15,6 +15,11 @@ const Trips = ({
     const [subTab, setSubTab] = useState('history')
     const [selectedTrip, setSelectedTrip] = useState(null)
     const [showPerformance, setShowPerformance] = useState(false)
+    const [isFullscreenVideo, setIsFullscreenVideo] = useState(false)
+
+    // Refs for video sync
+    const inlineVideoRef = useRef(null)
+    const [syncTime, setSyncTime] = useState(0)
 
     const tabs = [
         { key: 'history', label: 'History', icon: <Clock size={14} /> },
@@ -154,15 +159,32 @@ const Trips = ({
                         </button>
 
                         {/* Trip Hero */}
-                        <div style={{
-                            borderRadius: 16, overflow: 'hidden',
-                            marginBottom: 20, position: 'relative'
-                        }}>
-                            <img
-                                src={selectedTrip.image}
-                                alt={selectedTrip.routeName}
-                                style={{ width: '100%', height: 180, objectFit: 'cover' }}
-                            />
+                        <div
+                            style={{
+                                borderRadius: 16, overflow: 'hidden',
+                                marginBottom: 20, position: 'relative',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => {
+                                if (inlineVideoRef.current) {
+                                    setSyncTime(inlineVideoRef.current.currentTime)
+                                }
+                                setIsFullscreenVideo(true)
+                            }}
+                        >
+                            {true ? (
+                                <>
+                                    <video
+                                        ref={inlineVideoRef}
+                                        src={selectedTrip.video?.includes('V2') ? selectedTrip.video : '/Video/Peak Flow Video V2.mp4'}
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        style={{ width: '100%', height: 180, objectFit: 'cover' }}
+                                    />
+                                </>
+                            ) : null}
                             <div style={{
                                 position: 'absolute', inset: 0,
                                 background: 'linear-gradient(transparent 30%, rgba(15,17,21,0.9) 100%)'
@@ -172,6 +194,31 @@ const Trips = ({
                                 <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                                     {new Date(selectedTrip.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                                 </p>
+                            </div>
+                            <div style={{ position: 'absolute', bottom: 16, right: 16 }}>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        if (navigator.share) {
+                                            navigator.share({
+                                                title: selectedTrip.routeName,
+                                                text: 'Check out this awesome drive on Peak Flow!',
+                                                url: window.location.href,
+                                            }).catch(console.error)
+                                        } else {
+                                            alert('Sharing is not supported on your browser/device.')
+                                        }
+                                    }}
+                                    style={{
+                                        width: 36, height: 36, borderRadius: '50%',
+                                        background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)',
+                                        color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+                                    }}
+                                    title="Share Trip"
+                                >
+                                    <Share2 size={16} />
+                                </button>
                             </div>
                         </div>
 
@@ -335,6 +382,71 @@ const Trips = ({
                     </div>
                 )}
             </div>
+
+            {/* ─── Fullscreen Video Overlay ─── */}
+            {isFullscreenVideo && selectedTrip && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999,
+                    background: 'black', display: 'flex', flexDirection: 'column'
+                }}>
+                    <div style={{
+                        position: 'absolute', top: 40, left: 20, right: 20,
+                        display: 'flex', justifyContent: 'space-between', zIndex: 10
+                    }}>
+                        <button
+                            onClick={() => {
+                                if (navigator.share) {
+                                    navigator.share({
+                                        title: selectedTrip.routeName,
+                                        text: 'Check out this awesome drive on Peak Flow!',
+                                        url: window.location.href,
+                                    }).catch(console.error)
+                                } else {
+                                    alert('Sharing is not supported on your browser/device.')
+                                }
+                            }}
+                            style={{
+                                width: 44, height: 44, borderRadius: '50%',
+                                background: 'rgba(20,20,20,0.6)', backdropFilter: 'blur(10px)',
+                                color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <Share2 size={20} />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                setIsFullscreenVideo(false)
+                                // Extract the video element by targeting the previous sibling (the video itself)
+                                // or simply let the inline video resume from its normal loop for now
+                            }}
+                            style={{
+                                width: 44, height: 44, borderRadius: '50%',
+                                background: 'rgba(20,20,20,0.6)', backdropFilter: 'blur(10px)',
+                                color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+                    <video
+                        src={selectedTrip.video?.includes('V2') ? selectedTrip.video : '/Video/Peak Flow Video V2.mp4'}
+                        autoPlay
+                        loop
+                        controls
+                        playsInline
+                        onLoadedMetadata={(e) => {
+                            if (syncTime > 0) {
+                                e.target.currentTime = syncTime
+                            }
+                        }}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                </div>
+            )}
         </div>
     )
 }

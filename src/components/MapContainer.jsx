@@ -33,7 +33,7 @@ const MapController = ({ flyToTarget, userLocation }) => {
     // Fly to user location on first load
     useEffect(() => {
         if (userLocation && !hasFlown.current) {
-            map.flyTo(userLocation, 13, { duration: 1.5 })
+            map.flyTo(userLocation, 10, { duration: 1.5 })
             hasFlown.current = true
         }
     }, [userLocation, map])
@@ -250,7 +250,7 @@ const MapContainerComponent = ({ routes = [], routeGeometry, flyToTarget, onRout
             <LeafletMap
                 key={mapStyle}
                 center={center}
-                zoom={13}
+                zoom={10}
                 style={{ width: '100%', height: '100%', background: '#0f1115' }}
                 zoomControl={false}
                 attributionControl={false}

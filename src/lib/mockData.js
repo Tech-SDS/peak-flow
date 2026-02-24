@@ -271,7 +271,8 @@ export const MOCK_TRIPS = [
         duration: 48, // minutes actual
         image: 'https://welovetravel.in/wp-content/uploads/2024/09/david-talley-FWCjJ7VNm-k-unsplash-scaled.jpg',
         notes: 'Perfect conditions. Morning mist cleared by 10am. Took the southern variant through the valley.',
-        photos: 3,
+        photos: 0,
+        video: '/Video/Peak-Flow Video.mp4',
         performance: {
             avgSpeed: 72,
             maxSpeed: 164,
@@ -297,6 +298,7 @@ export const MOCK_TRIPS = [
         image: 'https://www.rossfeldpanoramastrasse.de/wp-content/uploads/2024/05/rossfeld-panorama-strasse-home-header-1024x682.jpg',
         notes: 'Cold but dry. Some frost patches on the northern switchbacks. Incredible sunset at the top.',
         photos: 7,
+        video: '/Video/Peak-Flow Video.mp4',
         performance: {
             avgSpeed: 64,
             maxSpeed: 148,
@@ -320,7 +322,8 @@ export const MOCK_TRIPS = [
         duration: 22,
         image: 'https://funkygermany.com/wp-content/uploads/2020/06/roadtrip-deutschland-bayern.jpg',
         notes: 'Quick blast around the ring. Track was quiet, perfect grip.',
-        photos: 2,
+        photos: 12,
+        video: '/Video/Peak-Flow Video.mp4',
         performance: {
             avgSpeed: 108,
             maxSpeed: 212,

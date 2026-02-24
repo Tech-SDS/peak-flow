@@ -365,7 +365,7 @@ const Profile = () => {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <PreferenceRow label="Preferred Roads" value="Mountain Passes, Forest Roads" />
-                    <PreferenceRow label="Avoid" value="Speed Humps, Unpaved" />
+                    <PreferenceRow label="Avoid" value="Highways, Tolls, Unpaved, Speed Humps" />
                     <PreferenceRow label="Units" value="Metric (km/h)" />
                 </div>
 
