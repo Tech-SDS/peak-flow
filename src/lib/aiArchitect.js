@@ -112,8 +112,8 @@ const estimateStats = (waypoints) => {
     return { distance: realDist, duration: realDur }
 }
 
-// ─── Generator Engine ───
-export const generateAIRouteIntent = async (userPrompt, userLocation) => {
+// ─── Local Simulation Fallback (Original Mock Engine) ───
+export const generateMockRouteIntent = async (userPrompt, userLocation) => {
     console.log('[AI Architect] Generating route for:', userPrompt, 'from:', userLocation)
     await new Promise(resolve => setTimeout(resolve, 1500)) // Sim thinking
 
@@ -203,8 +203,124 @@ export const generateAIRouteIntent = async (userPrompt, userLocation) => {
     }
 }
 
-// ─── Legacy Export (kept for compatibility) ───
+// ─── Gemini API Integration ───
+export const generateAIRouteIntent = async (userPrompt, userLocation) => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY
+
+    // Fallback to local simulation if no API key is provided
+    if (!apiKey) {
+        console.log('[AI Architect] No Gemini API Key found. Falling back to local simulation.')
+        return generateMockRouteIntent(userPrompt, userLocation)
+    }
+
+    console.log('[AI Architect] Querying Gemini for:', userPrompt)
+
+    // Setup the prompt
+    const lat = userLocation?.lat || 48.1351
+    const lng = userLocation?.lng || 11.5820
+
+    const systemInstruction = `
+You are the Peak Flow AI Architect, an expert in creating scenic, thrilling driving routes for sports cars and motorcycles.
+The user is at latitude: ${lat}, longitude: ${lng}.
+User request: "${userPrompt}"
+
+Generate a logical, continuous driving route (loop or A-to-B depending on request) with 2 to 5 specific waypoints (mountain passes, scenic roads, cafes, view points) near their location.
+Return the result STRICTLY as a raw JSON object with this exact schema (no markdown formatting, no backticks, just the JSON):
+{
+  "name": "Catchy Route Name (e.g. Alpine Sunrise Sprint)",
+  "reasoning": "Brief explanation of why this route fits their vibe",
+  "theme": "Spirited or Relaxed",
+  "curves": "High or Medium",
+  "isLoop": true,
+  "waypoints": [
+    { "name": "StartPoint", "lat": ${lat}, "lng": ${lng} },
+    { "name": "Waypoint 1 Name", "lat": 12.34, "lng": 56.78 },
+    { "name": "Waypoint 2 Name", "lat": 12.45, "lng": 56.89 }
+  ]
+}
+Ensure coordinates are real, driveable places. The first waypoint MUST be the user's starting location provided above. If it is a loop, make the last waypoint the exact same as the first. Format strictly as JSON.
+
+CRITICAL INSTRUCTION FOR DURATION MATCHING:
+The total driving time is directly dictated by how far away your chosen waypoints are.
+If the user asks for a short route (e.g. 30-60 mins), pick waypoints that are very close to the start (within 15-30km).
+If the user asks for a 2-hour route, pick waypoints within an approx 50-80km radius.
+Do NOT pick waypoints that are hundreds of kilometers away unless the user asks for a multi-day or full-day trip.
+    `.trim()
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: systemInstruction }] }]
+            })
+        })
+
+        if (!response.ok) throw new Error(`Gemini API error: ${response.statusText}`)
+
+        const data = await response.json()
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text
+
+        if (!rawText) throw new Error('No content returned from Gemini')
+
+        // Clean up markdown block if the LLM ignored instructions
+        const cleanText = rawText.replace(/^```json/m, '').replace(/^```/m, '').trim()
+        const aiResult = JSON.parse(cleanText)
+
+        // Calculate stats using the existing helper
+        const stats = estimateStats(aiResult.waypoints)
+
+        // Transform into Peak Flow Route Format
+        const routeData = {
+            id: `ai-gen-${Date.now()}`,
+            name: aiResult.name || 'AI Generated Route',
+            region: 'Generated',
+            author: 'Gemini AI Framework',
+            authorVerified: true,
+            distance: stats.distance,
+            duration: stats.duration,
+            curves: aiResult.curves || 'Medium',
+            curvinessIndex: aiResult.curves === 'High' ? 5 : 3,
+            sss: aiResult.theme === 'Spirited' ? 9.5 : 8.5,
+            hearts: 0,
+            technical: aiResult.theme === 'Spirited',
+            scenic: true,
+            isLoop: aiResult.isLoop || false,
+            isGenerated: true,
+            distanceFromUser: 0,
+            image: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800',
+            surface: { asphalt: 100 },
+            hazards: { potholes: 0, speedHumps: 0, unpaved: 0 },
+            elevation: { gain: Math.floor(stats.distance * 8), maxGradient: 4 },
+            waypoints: aiResult.waypoints,
+            stops: aiResult.waypoints.slice(1, -1) // intermediate stops
+        }
+
+        return {
+            status: 'success',
+            ai_reasoning: aiResult.reasoning || `Generated ${routeData.waypoints.length} stops based on your request.`,
+            route_proposal: routeData
+        }
+
+    } catch (err) {
+        console.error('[AI Architect] Gemini Generation failed:', err)
+        console.log('[AI Architect] Falling back to local simulation...')
+        return generateMockRouteIntent(userPrompt, userLocation)
+    }
+}
+
+// ─── Parameter Generator ───
 export const generateFromParameters = async (params, userLocation) => {
-    const prompt = `${params.style > 0.5 ? 'fast technical curves' : 'scenic chill'} ${params.duration} minutes`
+    // Translate the raw sliders/toggles into a natural language prompt for Gemini
+    const vibe = params.style > 0.5 ? 'fast and extremely curvy/technical' : 'scenic, relaxed, and chill'
+    const loopStr = params.isLoop ? 'Make it a closed loop returning to the start.' : 'Make it an A-to-B route.'
+    const durationStr = `approximately ${params.duration} minutes of driving`
+    const directionStr = `Head generally towards the ${params.direction} direction from the start.`
+
+    const maxRadius = Math.max(20, Math.floor(params.duration * 0.4)) // ~40% of duration in km as a rough radius limit
+
+    const prompt = `I want a ${durationStr} route. It should be ${vibe}. ${loopStr} ${directionStr} Please include interesting waypoints. IMPORTANT: To achieve the ${params.duration} minute duration limit, all waypoints MUST be within a ${maxRadius}km radius of the start point. Do not pick locations further away than this.`
+
+    console.log('[AI Architect] Parameter Prompt Builder:', prompt)
     return generateAIRouteIntent(prompt, userLocation)
 }
