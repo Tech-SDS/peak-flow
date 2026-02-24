@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { X, MapPin, Clock, Activity, Heart, Share2, Navigation, Users, AlertTriangle, Mountain, Gauge, Camera, Flag, Verified, Star, Infinity } from 'lucide-react'
+import RouteDetailsSection from './RouteDetailsSection'
 import { getSSSColor, getChassisThreats, formatDuration, getCurvinessLabel } from '../lib/sssEngine'
 import SSSInfoCard from './SSSInfoCard'
 
@@ -151,50 +152,8 @@ const RouteDetailSheet = ({
                         {/* ─── Route Details ─── */}
                         <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, color: '#fff' }}>Route Details</h3>
 
-                        {/* Surface Composition */}
-                        {route.surface && (
-                            <Section title="Surface Composition">
-                                <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
-                                    <div style={{ width: `${route.surface.asphalt || 0}%`, background: 'var(--sss-apex)' }} />
-                                    <div style={{ width: `${route.surface.concrete || 0}%`, background: 'var(--sss-good)' }} />
-                                    <div style={{ width: `${route.surface.cobblestone || 0}%`, background: 'var(--sss-caution)' }} />
-                                    <div style={{ width: `${route.surface.gravel || 0}%`, background: 'var(--sss-danger)' }} />
-                                </div>
-                                <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--sss-apex)' }} /> Asphalt {route.surface.asphalt || 0}%
-                                    </span>
-                                    {(route.surface.concrete > 0) && (
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--sss-good)' }} /> Concrete {route.surface.concrete}%
-                                        </span>
-                                    )}
-                                    {(route.surface.cobblestone > 0) && (
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--sss-caution)' }} /> Cobbles {route.surface.cobblestone}%
-                                        </span>
-                                    )}
-                                    {(route.surface.gravel > 0) && (
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--sss-danger)' }}>
-                                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--sss-danger)' }} /> Gravel {route.surface.gravel}%
-                                        </span>
-                                    )}
-                                </div>
-                                {(route.surface.gravel > 0) && (
-                                    <div className="surface-alert">
-                                        <AlertTriangle size={14} />
-                                        <span>⚠️ {route.surface.gravel}% of this route is gravel — high chassis risk</span>
-                                    </div>
-                                )}
-                                {(route.surface.cobblestone > 10) && (
-                                    <div className="surface-alert" style={{ background: 'rgba(255, 214, 0, 0.08)', borderColor: 'rgba(255, 214, 0, 0.2)', color: 'var(--sss-caution)' }}>
-                                        <AlertTriangle size={14} />
-                                        <span>⚠️ Significant cobblestone sections detected</span>
-                                    </div>
-                                )}
-                            </Section>
-                        )
-                        }
+                        {/* Surface Composition — using shared component (skip elevation, shown below with SVG) */}
+                        <RouteDetailsSection route={{ ...route, elevation: null }} />
 
                         {/* Elevation Profile */}
                         {route.elevation && (

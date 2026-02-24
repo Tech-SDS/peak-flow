@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import { Layers, X, Crosshair, Users, Globe, Map as MapIcon, Check, Info, List, Verified, Heart, Plus, Sparkles, Play, Pause, Square, Circle, StopCircle, ArrowLeft, Navigation, Clock, Mic } from 'lucide-react'
+import { Layers, X, Crosshair, Users, Globe, Map as MapIcon, Route, Check, Info, List, Verified, Heart, Plus, Sparkles, Play, Pause, Square, Circle, StopCircle, ArrowLeft, Navigation, Clock, Mic } from 'lucide-react'
 import { calculateRoute, calculateMultiStopRoute } from '../lib/routing'
 import RoutePlanningPanel from '../components/RoutePlanningPanel'
 import TurnByTurnPanel from '../components/TurnByTurnPanel'
@@ -1168,7 +1168,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                         }}
                         title={isNavOverview ? "Resume Navigation" : "Route Overview"}
                     >
-                        {isNavOverview ? <Navigation size={18} /> : <MapIcon size={18} />}
+                        {isNavOverview ? <Navigation size={18} /> : <Route size={18} />}
                     </button>
                 )}
             </div>
@@ -1381,6 +1381,11 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                             if (drivingMode && drivingMode.memberCount > 0) {
                                 // Active Convoy Mode
                                 setShowLeaveModal(true)
+                            } else if (drivingMode) {
+                                // Solo Navigation Mode -> Route to Squad tab to convert to Convoy
+                                if (onRequestConvoy) {
+                                    onRequestConvoy({ route: activeNavRoute || drivingMode })
+                                }
                             } else {
                                 // Discover Mode
                                 if (squadEnabled) {
@@ -1540,6 +1545,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                         })
                     }}
                     onConvoy={handleFormConvoy}
+                    onSave={() => handleEditorSave(activeNavRoute)}
                     userLocation={userLocation}
                 />
             )}

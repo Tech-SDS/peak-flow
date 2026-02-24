@@ -6,7 +6,7 @@ export const MOCK_ROUTES = [
         id: 1,
         name: 'The Black Forest Hairpins',
         region: 'Baden-Württemberg',
-        author: 'Stefan K.',
+        author: 'Stefan S.',
         authorVerified: true,
         distance: 42,
         curves: 'High',
@@ -131,7 +131,7 @@ export const MOCK_ROUTES = [
         id: 5,
         name: 'Taunus Climb',
         region: 'Hesse',
-        author: 'Stefan K.',
+        author: 'Stefan S.',
         authorVerified: true,
         distance: 35,
         curves: 'High',
@@ -224,7 +224,7 @@ export const MOCK_ROUTES = [
         id: 8,
         name: 'Grand Alpine Tour',
         region: 'The Alps',
-        author: 'Stefan K.',
+        author: 'Stefan S.',
         authorVerified: true,
         distance: 350,
         curves: 'Medium',
@@ -405,7 +405,7 @@ export const MOCK_GROUPS = [
 
 // ─── Users ───
 export const MOCK_USERS = [
-    { id: 'u1', name: 'Stefan K.', vehicle: 'McLaren 720S', verified: true, avatar: null },
+    { id: 'u1', name: 'Stefan S.', vehicle: 'McLaren 720S', verified: true, avatar: null },
     { id: 'u2', name: 'Jasper M.', vehicle: 'Porsche 911 GT3', verified: true, avatar: null },
     { id: 'u3', name: 'Max T.', vehicle: 'BMW M4', verified: false, avatar: null },
     { id: 'u4', name: 'Lisa R.', vehicle: 'Audi RS6', verified: true, avatar: null },

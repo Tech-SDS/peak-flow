@@ -1,40 +1,62 @@
 // ─── Peak Flow v13.0 — AI Architect Service ───
-// Simulates a "Real" LLM by dynamically composing routes from a POI database
-// based on natural language intent.
+// Dynamically generates route proposals based on the user's current location
+// and natural language intent. No hardcoded city locations.
 
-// ─── Knowledge Base: Points of Interest ───
-const POI_DB = {
-    starts: [
-        { name: 'Munich (Center)', lat: 48.1351, lng: 11.5820 },
-        { name: 'Munich (South)', lat: 48.0970, lng: 11.5450 }
+// ─── Dynamic POI Generator ───
+// Creates realistic-sounding POIs near any user location using random offsets
+const POI_TEMPLATES = {
+    scenic: [
+        { suffix: 'Lake Viewpoint', type: 'scenic', icon: '🏔️', tags: ['scenic', 'chill', 'swim'] },
+        { suffix: 'Reservoir Lookout', type: 'scenic', icon: '📸', tags: ['scenic', 'chill'] },
+        { suffix: 'Bridge Crossing', type: 'scenic', icon: '🌉', tags: ['scenic', 'bridge', 'chill'] },
+        { suffix: 'Panorama Point', type: 'scenic', icon: '🌅', tags: ['scenic', 'sunset', 'chill'] },
+        { suffix: 'Valley Overlook', type: 'scenic', icon: '💎', tags: ['scenic', 'mountains'] },
+        { suffix: 'Hilltop Vista', type: 'scenic', icon: '⛰️', tags: ['scenic', 'views'] },
     ],
-    lakes: [
-        { name: 'Walchensee', lat: 47.5940, lng: 11.4010, type: 'scenic', icon: '🏔️', tags: ['scenic', 'chill', 'swim'] },
-        { name: 'Kochelsee', lat: 47.6035, lng: 11.3308, type: 'scenic', icon: '📸', tags: ['scenic', 'chill'] },
-        { name: 'Sylvensteinsee', lat: 47.5870, lng: 11.5560, type: 'scenic', icon: '🌉', tags: ['scenic', 'bridge', 'chill'] },
-        { name: 'Tegernsee', lat: 47.7280, lng: 11.7730, type: 'scenic', icon: '⛵', tags: ['scenic', 'posh', 'coffee'] },
-        { name: 'Ammersee', lat: 47.9990, lng: 11.1310, type: 'scenic', icon: '🌅', tags: ['scenic', 'sunset', 'chill'] },
-        { name: 'Starnberger See', lat: 47.9077, lng: 11.3618, type: 'scenic', icon: '🛥️', tags: ['scenic', 'posh'] },
-        { name: 'Eibsee', lat: 47.4560, lng: 10.9920, type: 'scenic', icon: '💎', tags: ['scenic', 'far', 'mountains'] }
-    ],
-    passes: [
-        { name: 'Kesselberg Pass', lat: 47.6250, lng: 11.3520, type: 'driving', icon: '🏁', tags: ['curves', 'fast', 'technical'] },
-        { name: 'Sudelfeld Pass', lat: 47.6830, lng: 12.0100, type: 'driving', icon: '�️', tags: ['curves', 'technical', 'mountains'] },
-        { name: 'Tatzelwurm', lat: 47.6710, lng: 12.0830, type: 'driving', icon: '🐍', tags: ['curves', 'waterfall', 'short'] },
-        { name: 'Jachenau Toll Road', lat: 47.5800, lng: 11.4340, type: 'driving', icon: '🌲', tags: ['curves', 'forest', 'scenic'] }, // Adjusted coord
-        { name: 'Rossfeld Panoramastraße', lat: 47.6160, lng: 13.0930, type: 'driving', icon: '⛰️', tags: ['curves', 'views', 'far'] }
+    driving: [
+        { suffix: 'Mountain Pass', type: 'driving', icon: '🏁', tags: ['curves', 'fast', 'technical'] },
+        { suffix: 'Serpentine Road', type: 'driving', icon: '🐍', tags: ['curves', 'technical', 'mountains'] },
+        { suffix: 'Canyon Drive', type: 'driving', icon: '🛣️', tags: ['curves', 'waterfall', 'short'] },
+        { suffix: 'Forest Trail Road', type: 'driving', icon: '🌲', tags: ['curves', 'forest', 'scenic'] },
+        { suffix: 'Ridge Highway', type: 'driving', icon: '⛰️', tags: ['curves', 'views', 'far'] },
     ],
     food: [
-        { name: 'Dinbzer Kaffeerösterei', lat: 47.7550, lng: 11.7450, type: 'cafe', icon: '☕', tags: ['coffee', 'cake'] },
-        { name: 'Aran Brothaus Tegernsee', lat: 47.7080, lng: 11.7560, type: 'cafe', icon: '🍞', tags: ['coffee', 'view'] },
-        { name: 'Winklstüberl', lat: 47.7830, lng: 11.9540, type: 'cafe', icon: '🍰', tags: ['cake', 'traditional'] },
-        { name: 'Gourmet Tempel', lat: 48.0000, lng: 11.3000, type: 'food', icon: '🍜', tags: ['food'] }
+        { suffix: 'Artisan Roastery', type: 'cafe', icon: '☕', tags: ['coffee', 'cake'] },
+        { suffix: 'Roadside Bakery', type: 'cafe', icon: '🍞', tags: ['coffee', 'view'] },
+        { suffix: 'Mountain Bistro', type: 'cafe', icon: '🍰', tags: ['cake', 'traditional'] },
+        { suffix: 'Local Kitchen', type: 'food', icon: '🍜', tags: ['food'] },
     ],
-    cities: [
-        { name: 'Bad Tölz', lat: 47.7600, lng: 11.5600, type: 'landmark', icon: '🏘️', tags: ['city', 'culture'] },
-        { name: 'Mittenwald', lat: 47.4410, lng: 11.2640, type: 'landmark', icon: '🎻', tags: ['city', 'mountains'] },
-        { name: 'Garmisch-Partenkirchen', lat: 47.4910, lng: 11.0950, type: 'landmark', icon: '⛷️', tags: ['city', 'mountains'] }
+    landmark: [
+        { suffix: 'Old Town', type: 'landmark', icon: '🏘️', tags: ['city', 'culture'] },
+        { suffix: 'Historic Quarter', type: 'landmark', icon: '🎻', tags: ['city', 'mountains'] },
+        { suffix: 'Market Square', type: 'landmark', icon: '⛷️', tags: ['city', 'mountains'] },
     ]
+}
+
+// Generate POIs dynamically near a given location
+const generateNearbyPOIs = (center, radiusKm = 60) => {
+    const result = { scenic: [], driving: [], food: [], landmark: [] }
+    const degPerKm = 1 / 111 // rough conversion
+
+    for (const [category, templates] of Object.entries(POI_TEMPLATES)) {
+        templates.forEach((tpl, i) => {
+            // Random angle and distance from center
+            const angle = Math.random() * 2 * Math.PI
+            const dist = (0.2 + Math.random() * 0.8) * radiusKm * degPerKm
+            const lat = center.lat + dist * Math.cos(angle)
+            const lng = center.lng + dist * Math.sin(angle) / Math.cos(center.lat * Math.PI / 180)
+
+            result[category].push({
+                name: tpl.suffix,
+                lat, lng,
+                type: tpl.type,
+                icon: tpl.icon,
+                tags: tpl.tags,
+                description: `A ${tpl.type} stop ${Math.round(dist * 111)}km from your location`
+            })
+        })
+    }
+    return result
 }
 
 // ─── Intent Parser ───
@@ -65,7 +87,6 @@ const getRandom = (arr, count = 1) => {
 }
 
 const estimateStats = (waypoints) => {
-    // Rough logic: Calculate linear distance between points
     let dist = 0
     for (let i = 0; i < waypoints.length - 1; i++) {
         const lat1 = waypoints[i].lat
@@ -73,23 +94,19 @@ const estimateStats = (waypoints) => {
         const lat2 = waypoints[i + 1].lat
         const lon2 = waypoints[i + 1].lng
 
-        const R = 6371; // km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const R = 6371
+        const dLat = (lat2 - lat1) * Math.PI / 180
+        const dLon = (lon2 - lon1) * Math.PI / 180
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
             Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        dist += R * c;
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        dist += R * c
     }
 
-    // Road factor: scenic routes are twisty, so actual distance is ~1.4x linear
     const realDist = Math.round(dist * 1.4)
-
-    // Duration: Assume avg speed 60km/h (1km/min) + 15min per stop
-    // This is much more realistic for scenic driving
     const drivingMinutes = Math.round(realDist * 1.0)
-    const stopMinutes = (waypoints.length - 2) * 15 // Exclude start/end if loop
+    const stopMinutes = (waypoints.length - 2) * 15
     const realDur = drivingMinutes + stopMinutes
 
     return { distance: realDist, duration: realDur }
@@ -97,70 +114,67 @@ const estimateStats = (waypoints) => {
 
 // ─── Generator Engine ───
 export const generateAIRouteIntent = async (userPrompt, userLocation) => {
-    console.log('[AI Architect] Generating real route for:', userPrompt, 'from:', userLocation)
+    console.log('[AI Architect] Generating route for:', userPrompt, 'from:', userLocation)
     await new Promise(resolve => setTimeout(resolve, 1500)) // Sim thinking
 
     const { duration, vibes } = parseIntent(userPrompt)
-    const isLoop = true // Assume loops for now
 
-    // Build Stop List
-    let stops = []
-    // Use user location if available, else Munich
-    const start = userLocation ? { name: 'Current Location', lat: userLocation.lat, lng: userLocation.lng } : POI_DB.starts[0]
+    // Build start from user's actual location
+    const start = userLocation
+        ? { name: 'Current Location', lat: userLocation.lat, lng: userLocation.lng }
+        : { name: 'Start Point', lat: 48.1351, lng: 11.5820 } // Absolute last resort fallback
+
+    // Generate POIs dynamically near the user, scaled by trip duration
+    const radiusKm = Math.min(120, Math.max(20, duration / 3))
+    const nearbyPOIs = generateNearbyPOIs(start, radiusKm)
 
     // Filter candidate POIs based on vibes
     let candidates = []
-
-    // Add relevant categories
     if (vibes.includes('curves') || vibes.includes('fast')) {
-        candidates.push(...POI_DB.passes)
+        candidates.push(...nearbyPOIs.driving)
     }
     if (vibes.includes('scenic') || vibes.includes('chill')) {
-        candidates.push(...POI_DB.lakes)
-        candidates.push(...POI_DB.cities)
+        candidates.push(...nearbyPOIs.scenic)
+        candidates.push(...nearbyPOIs.landmark)
     }
     if (vibes.includes('coffee')) {
-        candidates.push(...POI_DB.food)
+        candidates.push(...nearbyPOIs.food)
     }
 
     // Default fill if empty or generic
     if (candidates.length === 0) {
-        candidates = [...POI_DB.lakes, ...POI_DB.passes, ...POI_DB.cities]
+        candidates = [...nearbyPOIs.scenic, ...nearbyPOIs.driving, ...nearbyPOIs.landmark]
     }
 
-    // Deduplicate
-    candidates = [...new Set(candidates)]
-
-    // Selection Strategy: Pick 2-4 primary stops based on duration
+    // Selection Strategy
     const numStops = Math.max(2, Math.min(5, Math.floor(duration / 45)))
     const selectedStops = getRandom(candidates, numStops)
 
-    // Fix: If "Coffee" requested, FORCE a coffee stop if not present
+    // Force a coffee stop if requested
     if (vibes.includes('coffee') && !selectedStops.some(s => s.type === 'cafe')) {
-        const coffeeStop = getRandom(POI_DB.food, 1)[0]
-        if (coffeeStop) selectedStops[1] = coffeeStop // Inject in middle
+        const coffeeStop = getRandom(nearbyPOIs.food, 1)[0]
+        if (coffeeStop) selectedStops[1] = coffeeStop
     }
 
-    // Sort roughly by longitude to make a logical loop (simple heuristic)
-    // Or just Keep random order for "adventure"? 
-    // Let's sort South-West to East? 
-    // Actually, simple sorting by LNG helps prevent zig-zags
-    selectedStops.sort((a, b) => a.lng - b.lng)
+    // Sort by angle from start to create a logical loop path
+    selectedStops.sort((a, b) => {
+        const angleA = Math.atan2(a.lat - start.lat, a.lng - start.lng)
+        const angleB = Math.atan2(b.lat - start.lat, b.lng - start.lng)
+        return angleA - angleB
+    })
 
-    // Construct Waypoints
+    // Construct loop waypoints
     const waypoints = [start, ...selectedStops, start]
-
-    // Stats
     const stats = estimateStats(waypoints)
 
-    // Naming
+    // Name the route
     const mainFeature = selectedStops.find(s => s.type === 'driving' || s.type === 'scenic') || selectedStops[0]
     const routeName = `AI: ${mainFeature.name} ${vibes.includes('fast') ? 'Sprint' : 'Explorer'}`
 
     const routeData = {
         id: `ai-gen-${Date.now()}`,
         name: routeName,
-        region: userLocation ? 'Near You' : 'Bavaria',
+        region: 'Near You',
         author: 'AI Architect',
         authorVerified: true,
         distance: stats.distance,
@@ -172,25 +186,25 @@ export const generateAIRouteIntent = async (userPrompt, userLocation) => {
         technical: vibes.includes('fast') || vibes.includes('curves'),
         scenic: true,
         isLoop: true,
+        isGenerated: true,
         distanceFromUser: 0,
-        image: mainFeature.type === 'scenic' ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Walchensee_Panorama.jpg/1280px-Walchensee_Panorama.jpg' : 'https://www.rossfeldpanoramastrasse.de/wp-content/uploads/2024/05/rossfeld-panorama-strasse-home-header-1024x682.jpg', // Dynamic image based on POI? kept simple for now
+        image: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800',
         surface: { asphalt: 100 },
         hazards: { potholes: 0, speedHumps: 0, unpaved: 0 },
         elevation: { gain: Math.floor(stats.distance * 8), maxGradient: 4 },
         waypoints: waypoints.map(w => ({ lat: w.lat, lng: w.lng, name: w.name })),
-        stops: selectedStops // keep metadata
+        stops: selectedStops
     }
 
     return {
         status: 'success',
-        ai_reasoning: `Selected ${selectedStops.length} stops matching "${vibes.join(', ')}" vibe.`,
+        ai_reasoning: `Generated ${selectedStops.length} stops matching "${vibes.join(', ')}" vibe, all near your current location.`,
         route_proposal: routeData
     }
 }
 
 // ─── Legacy Export (kept for compatibility) ───
 export const generateFromParameters = async (params, userLocation) => {
-    // Redirect to new logic using params
     const prompt = `${params.style > 0.5 ? 'fast technical curves' : 'scenic chill'} ${params.duration} minutes`
     return generateAIRouteIntent(prompt, userLocation)
 }

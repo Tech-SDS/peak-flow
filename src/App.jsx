@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import NavDock from './components/NavDock'
 import Discover from './pages/Discover'
 import Squad from './pages/Squad'
@@ -11,10 +11,29 @@ function App() {
     const [activeTab, setActiveTab] = useState('discover')
 
     // ─── User Lists State ───
-    const [favorites, setFavorites] = useState(new Set())
-    const [bucketList, setBucketList] = useState(new Set())
-    const [myRoutes, setMyRoutes] = useState([])
-    const [trips, setTrips] = useState([...MOCK_TRIPS])
+    // ─── User Lists State ───
+    const [favorites, setFavorites] = useState(() => {
+        const saved = localStorage.getItem('pf_favorites')
+        return saved ? new Set(JSON.parse(saved)) : new Set()
+    })
+    const [bucketList, setBucketList] = useState(() => {
+        const saved = localStorage.getItem('pf_bucketList')
+        return saved ? new Set(JSON.parse(saved)) : new Set()
+    })
+    const [myRoutes, setMyRoutes] = useState(() => {
+        const saved = localStorage.getItem('pf_myRoutes')
+        return saved ? JSON.parse(saved) : []
+    })
+    const [trips, setTrips] = useState(() => {
+        const saved = localStorage.getItem('pf_trips')
+        return saved ? JSON.parse(saved) : [...MOCK_TRIPS]
+    })
+
+    // Persistence Hooks
+    useEffect(() => { localStorage.setItem('pf_favorites', JSON.stringify([...favorites])) }, [favorites])
+    useEffect(() => { localStorage.setItem('pf_bucketList', JSON.stringify([...bucketList])) }, [bucketList])
+    useEffect(() => { localStorage.setItem('pf_myRoutes', JSON.stringify(myRoutes)) }, [myRoutes])
+    useEffect(() => { localStorage.setItem('pf_trips', JSON.stringify(trips)) }, [trips])
 
     const toggleFavorite = (id) => {
         setFavorites(prev => {
@@ -132,6 +151,8 @@ function App() {
                     onStartDrive={handleStartDrive}
                     onEndDrive={handleSquadEndDrive}
                     onBack={() => setActiveTab('discover')}
+                    activeNavRoute={initialDiscoverRoute}
+                    isSoloNavActive={!!drivingMode}
                 />
             )
             case 'trips': return (
@@ -141,6 +162,7 @@ function App() {
                     myRoutes={myRoutes}
                     trips={trips}
                     onToggleFavorite={toggleFavorite}
+                    onToggleBucketList={toggleBucketList}
                     onRemoveTrip={removeTrip}
                     onRemoveMyRoute={removeMyRoute}
                     onClearTrips={clearTrips}

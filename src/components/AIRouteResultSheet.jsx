@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { X, Navigation, MapPin, Clock, Ruler, Mountain, ChevronDown, ChevronUp, Heart, Bookmark, Users, Share2 } from 'lucide-react'
+import { X, Navigation, MapPin, Clock, Ruler, Mountain, ChevronDown, ChevronUp, Heart, Star, Users, Save, AlertTriangle } from 'lucide-react'
 
-const AIRouteResultSheet = ({ route, onClose, onStartNavigation, onFormConvoy }) => {
+const AIRouteResultSheet = ({ route, onClose, onStartNavigation, onFormConvoy, onSave, isFavorite, isBucketListed, onToggleFavorite, onToggleBucketList }) => {
     const [expanded, setExpanded] = useState(false)
 
     if (!route) return null
@@ -147,20 +147,42 @@ const AIRouteResultSheet = ({ route, onClose, onStartNavigation, onFormConvoy })
                         </div>
                     ))}
                 </div>
+                {/* Route Surface & Alerts (shown when expanded) */}
+                {expanded && route.surface && (
+                    <div style={{ marginTop: 16, padding: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Surface & Alerts</p>
+                        <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', marginBottom: 8 }}>
+                            <div style={{ width: `${route.surface.asphalt || 0}%`, background: 'var(--primary-apex)' }} />
+                            <div style={{ width: `${route.surface.gravel || 0}%`, background: 'var(--sss-danger)' }} />
+                        </div>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Asphalt {route.surface.asphalt || 100}%</p>
+                        {route.hazards?.potholes > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, color: '#ff4444' }}>
+                                <AlertTriangle size={12} /> Potholes reported
+                            </div>
+                        )}
+                        {route.hazards?.speedHumps > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, fontSize: 12, color: '#ffbb33' }}>
+                                <AlertTriangle size={12} /> {route.hazards.speedHumps} speed humps
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Action Bar */}
             <div style={{
                 padding: '14px 20px',
                 borderTop: '1px solid rgba(255,255,255,0.08)',
-                display: 'flex', gap: 10, alignItems: 'center'
+                display: 'flex', gap: 10, alignItems: 'center',
+                flexShrink: 0
             }}>
                 {/* Start Nav */}
                 <button
                     onClick={() => onStartNavigation && onStartNavigation(route)}
                     className="btn-primary"
                     style={{
-                        flex: 1,
+                        flex: 2,
                         padding: '14px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                         fontSize: 14, fontWeight: 700
@@ -172,20 +194,39 @@ const AIRouteResultSheet = ({ route, onClose, onStartNavigation, onFormConvoy })
                 {/* Form Convoy */}
                 <button
                     onClick={() => onFormConvoy && onFormConvoy(route)}
-                    style={{
-                        padding: '14px 18px',
-                        borderRadius: 12,
-                        background: 'rgba(255,255,255,0.06)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        color: 'white',
-                        fontSize: 13, fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        fontFamily: 'var(--font-main)'
-                    }}
+                    className="btn-glass"
+                    style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600 }}
                 >
                     <Users size={15} /> Convoy
                 </button>
+
+                {/* Save / Fav / Wishlist */}
+                <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                        onClick={() => onSave && onSave(route)}
+                        className="action-icon-btn"
+                        style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', color: 'white' }}
+                        title="Save route"
+                    >
+                        <Save size={18} />
+                    </button>
+                    <button
+                        onClick={() => onToggleBucketList && onToggleBucketList()}
+                        className={`action-icon-btn ${isBucketListed ? 'star-active' : ''}`}
+                        style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', color: isBucketListed ? '#fbbf24' : 'white' }}
+                        title="Add to wishlist"
+                    >
+                        <Star size={18} fill={isBucketListed ? '#fbbf24' : 'none'} />
+                    </button>
+                    <button
+                        onClick={() => onToggleFavorite && onToggleFavorite()}
+                        className={`action-icon-btn ${isFavorite ? 'heart-active' : ''}`}
+                        style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
+                        title="Favourite"
+                    >
+                        <Heart size={18} fill={isFavorite ? '#ff1744' : 'none'} color={isFavorite ? '#ff1744' : 'white'} />
+                    </button>
+                </div>
             </div>
         </div>
     )

@@ -7,7 +7,7 @@ const NavDock = ({ activeTab, onTabChange, activeConvoy, hidden, squadEnabled })
         { id: 'discover', label: 'Discover', icon: Compass },
         { id: 'squad', label: 'Squad', icon: Users },
         { id: 'trips', label: 'Trips', icon: Clock },
-        { id: 'profile', label: 'Profile', icon: User },
+        { id: 'profile', label: 'Settings', icon: User },
     ]
 
     return (

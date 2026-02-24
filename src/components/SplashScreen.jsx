@@ -27,15 +27,15 @@ const SplashScreen = ({ onFinish }) => {
         const randomIndex = Math.floor(Math.random() * QUOTES.length)
         setQuote(QUOTES[randomIndex])
 
-        // 5 seconds visible, then fade
+        // 3 seconds visible, then fade
         const timer = setTimeout(() => {
             setIsFading(true)
-        }, 5000)
+        }, 3000)
 
         // Wait for fade animation (1s) then finish
         const cleanup = setTimeout(() => {
             if (onFinish) onFinish()
-        }, 6000)
+        }, 4000)
 
         return () => {
             clearTimeout(timer)

@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Navigation, Heart, Users, Star, MapPin, Clock, Infinity, ArrowLeft, Trash2, Save } from 'lucide-react'
 import SSSInfoCard from './SSSInfoCard'
 import RouteSummaryCard from './RouteSummaryCard'
+import RouteDetailsSection from './RouteDetailsSection'
 import { formatDuration } from '../lib/sssEngine'
 
 const formatTime = (minutes) => {
@@ -29,6 +30,19 @@ const RouteOverviewSheet = ({
     const [showSSSInfo, setShowSSSInfo] = useState(false)
     const [isExpanded, setIsExpanded] = useState(false)
     const [dragStartY, setDragStartY] = useState(null)
+    const [isSaved, setIsSaved] = useState(false)
+    const [toast, setToast] = useState(null) // { message, key }
+
+    // Auto-dismiss toast
+    useEffect(() => {
+        if (!toast) return
+        const t = setTimeout(() => setToast(null), 2200)
+        return () => clearTimeout(t)
+    }, [toast])
+
+    const showToast = useCallback((msg) => {
+        setToast({ message: msg, key: Date.now() })
+    }, [])
 
     // Touch Handlers for Drag
     const onTouchStart = (e) => {
@@ -86,12 +100,11 @@ const RouteOverviewSheet = ({
                 style={{
                     position: 'absolute', bottom: 0,
                     left: 0, right: 0,
-                    // left: '50%', transform: 'translateX(-50%)',
                     width: '100%',
                     maxWidth: 'none',
-                    height: isExpanded ? '92vh' : '460px', // Increased from 420px for better sneak peek
+                    height: isExpanded ? '92vh' : '460px',
                     transition: 'height 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
-                    zIndex: 'var(--z-panel)',
+                    zIndex: 500, /* Must be above NavDock (z-dock: 400) */
                     borderTopLeftRadius: 24, borderTopRightRadius: 24,
                     display: 'flex', flexDirection: 'column',
                     overflow: 'hidden',
@@ -254,142 +267,118 @@ const RouteOverviewSheet = ({
                         {route.description || route.details || "A scenic route through the best driving roads in the region. Features a mix of tight hairpins and sweeping curves."}
                     </p>
 
-                    {/* ─── Route Attributes Grid ─── */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
-                        {/* Surface Types */}
-                        {route.surface && (
-                            <div className="glass-panel" style={{ padding: '12px', background: 'rgba(255,255,255,0.03)' }}>
-                                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase' }}>Surface</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                    {Object.entries(route.surface).map(([type, pct]) => pct > 0 && (
-                                        <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                                            <div style={{ flex: 1, textTransform: 'capitalize' }}>{type}</div>
-                                            <div style={{ fontWeight: 700, color: 'var(--primary-apex)' }}>{pct}%</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Hazards / Alerts */}
-                        {route.hazards && (
-                            <div className="glass-panel" style={{ padding: '12px', background: 'rgba(255,255,255,0.03)' }}>
-                                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase' }}>Alerts</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                                        <span style={{ color: route.hazards.potholes > 0 ? '#ff4444' : 'var(--text-muted)' }}>●</span>
-                                        <span style={{ color: route.hazards.potholes > 0 ? 'white' : 'var(--text-muted)' }}>Potholes: {route.hazards.potholes > 0 ? 'Yes' : 'None'}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                                        <span style={{ color: route.hazards.speedHumps > 0 ? '#ffbb33' : 'var(--text-muted)' }}>●</span>
-                                        <span style={{ color: route.hazards.speedHumps > 0 ? 'white' : 'var(--text-muted)' }}>Speed Humps: {route.hazards.speedHumps}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                                        <span style={{ color: route.hazards.unpaved > 0 ? '#ffbb33' : 'var(--text-muted)' }}>●</span>
-                                        <span style={{ color: route.hazards.unpaved > 0 ? 'white' : 'var(--text-muted)' }}>Unpaved: {route.hazards.unpaved > 0 ? 'Yes' : 'None'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Elevation Profile (Simple Stats) */}
-                    {route.elevation && (
-                        <div style={{ marginBottom: 24, padding: '0 4px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                                <span>Elevation Gain</span>
-                                <span style={{ color: 'white', fontWeight: 700 }}>+{route.elevation.gain}m</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)' }}>
-                                <span>Max Gradient</span>
-                                <span style={{ color: 'white', fontWeight: 700 }}>{route.elevation.maxGradient}%</span>
-                            </div>
-                        </div>
-                    )}
+                    <RouteDetailsSection route={route} />
 
                     {/* Mock Waypoints / Stops */}
 
                 </div>
 
 
-                {/* Action Bar — 2 CTAs only in preview */}
+                {/* ─── Unified Action Bar ─── */}
                 <div style={{
-                    padding: '0 20px 20px',
-                    display: 'flex', gap: 10,
+                    padding: '12px 20px',
+                    paddingBottom: 90, /* Clear NavDock (80px + safe area) */
+                    display: 'flex', gap: 8,
                     alignItems: 'center',
-                    marginTop: 'auto', // Push to bottom if expanded
-                    flexShrink: 0
+                    marginTop: 'auto',
+                    flexShrink: 0,
+                    borderTop: '1px solid rgba(255,255,255,0.06)'
                 }}>
-                    {route.isGenerated ? (
-                        <>
+                    {/* Start Navigation */}
+                    <button onClick={onStartDrive} className="btn-primary" style={{
+                        flex: 2, padding: '10px 14px', height: 44,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        fontSize: 14, fontWeight: 700
+                    }}>
+                        <Navigation size={15} />
+                        <span>Start</span>
+                        {distanceToStart !== null && (
+                            <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.6)' }}>
+                                · {Math.round(distanceToStart)} km away
+                            </span>
+                        )}
+                    </button>
 
-                            {/* Save */}
-                            <button onClick={() => {
-                                onSave()
-                                alert("Route saved to 'My Routes'")
-                            }} className="btn-glass" style={{
-                                flex: 1, padding: '14px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                fontSize: 14, fontWeight: 600
-                            }}>
-                                <Save size={16} /> Save
-                            </button>
+                    {/* Create Convoy */}
+                    <button onClick={onFormConvoy} className="btn-glass" style={{
+                        padding: '10px 14px', height: 44,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        fontSize: 13, fontWeight: 600
+                    }}>
+                        <Users size={15} /> Convoy
+                    </button>
 
-                            {/* Create Convoy */}
-                            <button onClick={onFormConvoy} className="btn-glass" style={{
-                                flex: 1, padding: '14px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                fontSize: 14, fontWeight: 600
-                            }}>
-                                <Users size={16} /> Create convoy
-                            </button>
-
-                            {/* Start Navigation */}
-                            <button onClick={onStartDrive} className="btn-primary" style={{
-                                flex: 2, padding: '12px 16px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                fontSize: 15, fontWeight: 700
-                            }}>
-                                <Navigation size={18} />
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span>Start</span>
-                                    {distanceToStart !== null && (
-                                        <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.55)' }}>
-                                            {Math.round(distanceToStart)} km to start
-                                        </span>
-                                    )}
-                                </div>
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button onClick={onStartDrive} className="btn-primary" style={{
-                                flex: 2, padding: '12px 16px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                fontSize: 15, fontWeight: 700
-                            }}>
-                                <Navigation size={16} />
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span>Start Navigation</span>
-                                    <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.55)' }}>
-                                        Distance to start: {distanceToStart ? Math.round(distanceToStart) : '?'} km
-                                    </span>
-                                </div>
-                            </button>
-                            <button onClick={onFormConvoy} className="btn-glass" style={{
-                                flex: 1, padding: '14px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                fontSize: 14, fontWeight: 600
-                            }}>
-                                <Users size={16} /> Create convoy
-                            </button>
-                        </>
+                    {/* Save (for user/AI-generated routes) */}
+                    {onSave && (
+                        <button onClick={() => {
+                            const willSave = !isSaved
+                            setIsSaved(willSave)
+                            if (willSave) onSave()
+                            showToast(willSave ? '✓ Route saved' : 'Route unsaved')
+                        }} className="action-icon-btn" style={{
+                            width: 44, height: 44,
+                            background: isSaved ? 'rgba(255,95,31,0.15)' : 'rgba(255,255,255,0.1)',
+                            borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: isSaved ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                            cursor: 'pointer',
+                            color: isSaved ? 'var(--primary-apex)' : 'white',
+                            transition: 'all 0.25s'
+                        }} title={isSaved ? 'Saved' : 'Save route'}>
+                            <Save size={18} fill={isSaved ? 'var(--primary-apex)' : 'none'} />
+                        </button>
                     )}
+
+                    {/* Wishlist (Star) */}
+                    <button
+                        className={`action-icon-btn ${isBucketListed ? 'star-active' : ''}`}
+                        onClick={() => {
+                            onToggleBucketList()
+                            showToast(isBucketListed ? 'Removed from wishlist' : '⭐ Added to wishlist')
+                        }}
+                        style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', color: isBucketListed ? '#fbbf24' : 'white', transition: 'all 0.25s' }}
+                        title="Add to wishlist"
+                    >
+                        <Star size={18} fill={isBucketListed ? '#fbbf24' : 'none'} />
+                    </button>
+
+                    {/* Favorite (Heart) */}
+                    <button
+                        className={`action-icon-btn ${isFavorite ? 'heart-active' : ''}`}
+                        onClick={() => {
+                            onToggleFavorite()
+                            showToast(isFavorite ? 'Removed from favourites' : '❤️ Added to favourites')
+                        }}
+                        style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'all 0.25s' }}
+                        title="Favourite"
+                    >
+                        <Heart size={18} fill={isFavorite ? '#ff1744' : 'none'} color={isFavorite ? '#ff1744' : 'white'} />
+                    </button>
                 </div>
             </div >
 
             {/* SSS Info Overlay */}
             {showSSSInfo && <SSSInfoCard onClose={() => setShowSSSInfo(false)} />}
+
+            {/* Toast */}
+            {toast && (
+                <div key={toast.key} style={{
+                    position: 'fixed',
+                    bottom: 160, left: '50%', transform: 'translateX(-50%)',
+                    padding: '10px 24px',
+                    background: 'rgba(30,33,40,0.95)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 24,
+                    color: 'white',
+                    fontSize: 13, fontWeight: 600,
+                    zIndex: 9999,
+                    pointerEvents: 'none',
+                    animation: 'fadeIn 0.2s ease, fadeOut 0.3s ease 1.9s forwards',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                    whiteSpace: 'nowrap'
+                }}>
+                    {toast.message}
+                </div>
+            )}
         </>
     )
 }

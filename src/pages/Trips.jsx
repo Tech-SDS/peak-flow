@@ -4,10 +4,11 @@ import TripCard from '../components/TripCard'
 import RouteCard from '../components/RouteCard'
 import PerformancePanel from '../components/PerformancePanel'
 import { MOCK_ROUTES } from '../lib/mockData'
+import { ROUTE_DATABASE } from '../lib/mockRoutes'
 
 const Trips = ({
     favorites, bucketList, myRoutes = [], trips = [],
-    onToggleFavorite, onRemoveTrip, onRemoveMyRoute,
+    onToggleFavorite, onToggleBucketList, onRemoveTrip, onRemoveMyRoute,
     onClearTrips, onClearFavorites, onClearBucketList, onClearMyRoutes,
     onSelectRoute, onCreateRoute
 }) => {
@@ -27,9 +28,13 @@ const Trips = ({
         setShowPerformance(false)
     }
 
+    // Combine all known routes for lookups
+    const ALL_ROUTES = [...ROUTE_DATABASE, ...MOCK_ROUTES]
+    const findRoute = (id) => ALL_ROUTES.find(r => r.id === id)
+
     // Filter routes for lists
-    const favoriteRoutes = MOCK_ROUTES.filter(r => favorites.has(r.id))
-    const bucketListRoutes = MOCK_ROUTES.filter(r => bucketList.has(r.id))
+    const favoriteRoutes = [...favorites].map(findRoute).filter(Boolean)
+    const bucketListRoutes = [...bucketList].map(findRoute).filter(Boolean)
 
     // ─── Delete button for individual items ───
     const DeleteBtn = ({ onClick }) => (
@@ -267,7 +272,7 @@ const Trips = ({
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
                                         {bucketListRoutes.map(route => (
                                             <div key={route.id} style={{ position: 'relative' }}>
-                                                <DeleteBtn onClick={() => onToggleFavorite && onToggleFavorite(route.id)} />
+                                                <DeleteBtn onClick={() => onToggleBucketList && onToggleBucketList(route.id)} />
                                                 <RouteCard
                                                     route={route}
                                                     onClick={() => onSelectRoute && onSelectRoute(route)}

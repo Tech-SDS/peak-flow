@@ -1,5 +1,6 @@
 import React, { useState, useReducer, useRef, useEffect, useCallback } from 'react'
 import { Plus, Users, Share2, MapPin, Navigation, Calendar, Clock, Trash2, Camera, X, MessageSquare, Image as ImageIcon, ArrowLeft, ArrowRight, ChevronRight, ChevronLeft, Info, Settings, MoreVertical, Send, Check, AlertTriangle, Sparkles, Radio, QrCode, Zap, Route, MessageCircle, Wifi, WifiOff, Mic, Map as MapIcon, Search } from 'lucide-react'
+import RouteDetailsSection from '../components/RouteDetailsSection'
 import { calculateMultiStopRoute } from '../lib/routing'
 import { reverseGeocode } from '../lib/searchService'
 import RouteSummaryCard from '../components/RouteSummaryCard'
@@ -20,7 +21,7 @@ const MOCK_USERS = MOCK_CONTACTS
 
 // ─── Mock chat messages ───
 const INITIAL_MESSAGES = [
-    { id: 'm1', userId: 'u1', name: 'Stefan K.', text: 'Convoy created! Who\'s in? 🏎️', time: '15:30' },
+    { id: 'm1', userId: 'u1', name: 'Stefan S.', text: 'Convoy created! Who\'s in? 🏎️', time: '15:30' },
 ]
 
 // ─── Convoy State Machine ───
@@ -126,7 +127,7 @@ const labelStyle = { fontSize: 13, fontWeight: 600, marginBottom: 8, display: 'b
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // MAIN COMPONENT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInitialMembers, initialRoute = null, onClearInitialRoute, onStartDrive, onEndDrive, onBack }) => {
+const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInitialMembers, initialRoute = null, onClearInitialRoute, onStartDrive, onEndDrive, onBack, activeNavRoute = null, isSoloNavActive = false }) => {
     const [state, dispatch] = useReducer(convoyReducer, initialState)
     const [joinCode, setJoinCode] = useState('')
     const [showJoinInput, setShowJoinInput] = useState(false)
@@ -349,6 +350,53 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                 <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>Squad</h1>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 28 }}>Your convoy lobby</p>
 
+                {/* ── Nav-to-Convoy Banner ── */}
+                {isSoloNavActive && (
+                    <div style={{
+                        marginBottom: 24, borderRadius: 16, overflow: 'hidden',
+                        background: 'linear-gradient(135deg, rgba(255,95,31,0.15), rgba(255,95,31,0.05))',
+                        border: '1px solid rgba(255,95,31,0.35)',
+                        padding: '18px 20px'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                            <div style={{
+                                width: 36, height: 36, borderRadius: '50%',
+                                background: 'rgba(255,95,31,0.2)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                            }}>
+                                <Route size={18} color="var(--primary-apex)" />
+                            </div>
+                            <div>
+                                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary-apex)', marginBottom: 2 }}>You're navigating a route</p>
+                                <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                                    {activeNavRoute?.name || activeNavRoute?.destinationName
+                                        ? `"${activeNavRoute.name || `To ${activeNavRoute.destinationName}`}"`
+                                        : 'Active route'} · {activeNavRoute?.distance ? `${typeof activeNavRoute.distance === 'number' && activeNavRoute.distance > 800 ? (activeNavRoute.distance / 1000).toFixed(1) : activeNavRoute.distance} km` : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                dispatch({ type: 'CREATE_CONVOY' })
+                                if (activeNavRoute) {
+                                    // Normalize and pre-seed the route
+                                    let r = { ...activeNavRoute }
+                                    if (!r.name && r.destinationName) r.name = `To ${r.destinationName}`
+                                    if (!r.name) r.name = 'Active Route'
+                                    if (!r.region) r.region = 'Custom'
+                                    if (r.distance && r.distance > 800) r.distance = (r.distance / 1000).toFixed(1)
+                                    dispatch({ type: 'SET_ROUTE', payload: r })
+                                    dispatch({ type: 'SET_TITLE', payload: `${r.name} Convoy` })
+                                }
+                            }}
+                            className="btn-primary"
+                            style={{ width: '100%', padding: '13px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                        >
+                            <Users size={16} /> Set Up Convoy with this Route
+                        </button>
+                    </div>
+                )}
+
                 <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
                     <button onClick={() => dispatch({ type: 'CREATE_CONVOY' })} className="btn-primary"
                         style={{ flex: 1, padding: '18px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 15, fontWeight: 700 }}>
@@ -491,14 +539,14 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
     }
 
     // ━━━ BUILDING PHASE (Enhanced Setup) ━━━
+    // Combine all available routes: myRoutes (saved) + MOCK_ROUTES as fallback
+    const availableRoutes = myRoutes.length > 0 ? myRoutes : MOCK_ROUTES
+
     if (phase === 'building') {
         const filteredContacts = MOCK_CONTACTS.filter(c =>
             !convoy.members.find(m => m.id === c.id) &&
             (c.name.toLowerCase().includes(memberSearch.toLowerCase()) || c.username.toLowerCase().includes(memberSearch.toLowerCase()))
         )
-
-        // Combine all available routes: myRoutes (saved) + MOCK_ROUTES as fallback
-        const availableRoutes = myRoutes.length > 0 ? myRoutes : MOCK_ROUTES
 
         return (
             <div style={{ height: '100%', overflow: 'auto', padding: '56px 20px 100px' }} className="no-scrollbar">
@@ -819,7 +867,7 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
 
         const handleSendMessage = () => {
             if (!chatInput.trim()) return
-            dispatch({ type: 'ADD_MESSAGE', payload: { id: 'm' + Date.now(), userId: 'u1', name: 'Stefan K.', text: chatInput, time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) } })
+            dispatch({ type: 'ADD_MESSAGE', payload: { id: 'm' + Date.now(), userId: 'u1', name: 'Stefan S.', text: chatInput, time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) } })
             setChatInput('')
         }
 
@@ -1005,12 +1053,15 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                                             onStopUpdate={(index, details) => dispatch({ type: 'UPDATE_STOP_DETAILS', payload: { index, details } })}
                                             showHeader={false}
                                         />
+
+                                        {/* Route Details: Surface & Hazards — shared component */}
+                                        <RouteDetailsSection route={convoy.route} compact />
                                     </div>
                                 </div>
 
                                 {/* Action Bar */}
                                 <div style={{ padding: '0 16px 16px', display: 'flex', gap: 10 }}>
-                                    <button style={{
+                                    <button onClick={() => setShowRouteSelector(true)} style={{
                                         flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)',
                                         border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
                                         color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer'
@@ -1030,7 +1081,7 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                                 <Route size={40} color="var(--text-muted)" style={{ opacity: 0.3, marginBottom: 12 }} />
                                 <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>No route set yet</p>
-                                <button style={{
+                                <button onClick={() => setShowRouteSelector(true)} style={{
                                     marginTop: 16, padding: '12px 24px', borderRadius: 12,
                                     background: 'rgba(255,95,31,0.1)', border: '1px solid rgba(255,95,31,0.3)',
                                     color: 'var(--primary-apex)', cursor: 'pointer', fontFamily: 'var(--font-main)',
@@ -1040,6 +1091,47 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                         )
                     )
                     }
+
+                    {/* Route Selector Modal (works for both building and summary phases) */}
+                    {showRouteSelector && (
+                        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', flexDirection: 'column' }}>
+                            <div style={{ padding: '56px 20px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <button onClick={() => setShowRouteSelector(false)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}><ArrowLeft size={18} /></button>
+                                <h2 style={{ fontSize: 20, fontWeight: 800 }}>Select a Route</h2>
+                            </div>
+                            <div style={{ flex: 1, overflow: 'auto', padding: '0 20px 40px' }} className="no-scrollbar">
+                                {availableRoutes.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                                        <Route size={40} color="var(--text-muted)" style={{ opacity: 0.3, marginBottom: 12 }} />
+                                        <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>No saved routes yet</p>
+                                        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Create routes from the Discover tab first</p>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        {availableRoutes.map(route => (
+                                            <div key={route.id} onClick={() => { dispatch({ type: 'SET_ROUTE', payload: route }); setShowRouteSelector(false) }}
+                                                className="glass-panel" style={{ display: 'flex', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.15s' }}
+                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                                                <div style={{ width: 80, height: 80, flexShrink: 0, overflow: 'hidden' }}>
+                                                    <img src={route.image} alt={route.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                </div>
+                                                <div style={{ flex: 1, padding: '10px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{route.name}</h4>
+                                                    <div style={{ display: 'flex', gap: 10, fontSize: 11, color: 'var(--text-secondary)' }}>
+                                                        <span>{route.distance}km</span>
+                                                        <span>{route.region}</span>
+                                                        {route.waypoints && <span>{route.waypoints.length} waypoints</span>}
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', color: 'var(--text-muted)' }}><ChevronRight size={16} /></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* CHAT TAB */}
                     {
