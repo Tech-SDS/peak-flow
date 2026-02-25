@@ -10,7 +10,7 @@ import { MOCK_ROUTES, MOCK_GROUPS } from '../lib/mockData'
 
 // ─── Convoy State Machine ───
 const MOCK_CONTACTS = [
-    { id: 'u2', name: 'Jasper M.', vehicle: 'Porsche 911 GT3', username: '@jasper_m' },
+    { id: 'u2', name: localStorage.getItem('pf_username') || 'Stefan S.', vehicle: 'Porsche 911 GT3', username: '@user' },
     { id: 'u3', name: 'Max T.', vehicle: 'BMW M4', username: '@max_t' },
     { id: 'u4', name: 'Lisa R.', vehicle: 'Audi RS6', username: '@lisa_r' },
     { id: 'u5', name: 'Tom W.', vehicle: 'Mercedes AMG GT', username: '@tom_w' },
@@ -44,7 +44,7 @@ function convoyReducer(state, action) {
                     coverImage: null,
                     code: Math.random().toString(36).substring(2, 8).toUpperCase(),
                     route: null,
-                    members: [MOCK_USERS[0]],
+                    members: [{ ...MOCK_USERS[0], name: localStorage.getItem('pf_username') || 'Stefan S.' }],
                     schedule: 'instant', // 'instant' | ISO date string
                     gallery: [],
                     messages: [...INITIAL_MESSAGES],
@@ -61,7 +61,7 @@ function convoyReducer(state, action) {
                     coverImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600',
                     code: action.payload?.code || '------',
                     route: action.payload?.route || null,
-                    members: [MOCK_USERS[0], MOCK_USERS[1]],
+                    members: [{ ...MOCK_USERS[0], name: localStorage.getItem('pf_username') || 'Stefan S.' }, MOCK_USERS[1]],
                     schedule: 'instant',
                     gallery: [],
                     messages: [...INITIAL_MESSAGES],
