@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Shield, Car, Settings, ChevronRight, Edit3, RefreshCw, Plus, Check, Trash2, Star, Camera, Volume2, VolumeX, Bell, X } from 'lucide-react'
+import { Shield, Car, Settings, ChevronRight, Edit3, RefreshCw, Plus, Check, Trash2, Star, Camera, Volume2, VolumeX, Bell, X, Map } from 'lucide-react'
 
 const INITIAL_GARAGE = [
     { id: 1, make: 'McLaren', model: '720S', year: 2024, power: '720 PS (530 kW)', active: true, image: null },
     { id: 2, make: 'Porsche', model: '911 GT3 RS', year: 2023, power: '525 PS (386 kW)', active: false, image: null },
 ]
 
-const Profile = () => {
+const Profile = ({ onOpenSandbox }) => {
     const [garage, setGarage] = useState(() => {
         const saved = localStorage.getItem('pf_garage')
         return saved ? JSON.parse(saved) : INITIAL_GARAGE
@@ -439,7 +439,20 @@ const Profile = () => {
                     App Info
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                    <button
+                        onClick={onOpenSandbox}
+                        className="btn-glass"
+                        style={{
+                            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '14px 16px', borderColor: 'var(--primary-apex)', color: 'white', borderRadius: 12
+                        }}
+                    >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700 }}><Map size={18} color="var(--primary-apex)" /> 3D Flyover Studio</span>
+                        <ChevronRight size={16} color="var(--primary-apex)" />
+                    </button>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                         <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Version</span>
                         <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>v1.0.2</span>
                     </div>

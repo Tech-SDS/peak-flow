@@ -4,6 +4,7 @@ import Discover from './pages/Discover'
 import Squad from './pages/Squad'
 import Trips from './pages/Trips'
 import Profile from './pages/Profile'
+import SandboxStudio from './pages/SandboxStudio'
 import { MOCK_TRIPS } from './lib/mockData'
 import SplashScreen from './components/SplashScreen'
 
@@ -179,7 +180,10 @@ function App() {
                     onSelectRoute={handleSelectDiscoverRoute}
                 />
             )
-            case 'profile': return <Profile />
+            case 'sandbox': return (
+                <SandboxStudio onBack={() => setActiveTab('profile')} />
+            )
+            case 'profile': return <Profile onOpenSandbox={() => setActiveTab('sandbox')} />
             default: return (
                 <Discover
                     favorites={favorites}
@@ -220,7 +224,9 @@ function App() {
             <main style={{ height: '100%' }}>
                 {renderContent()}
             </main>
-            <NavDock activeTab={activeTab} onTabChange={setActiveTab} activeConvoy={activeConvoy} hidden={!!drivingMode || isNavHidden} squadEnabled={squadEnabled} />
+            {activeTab !== 'sandbox' && (
+                <NavDock activeTab={activeTab} onTabChange={setActiveTab} activeConvoy={activeConvoy} hidden={!!drivingMode || isNavHidden} squadEnabled={squadEnabled} />
+            )}
         </div>
     )
 }
