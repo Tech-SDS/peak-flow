@@ -198,13 +198,17 @@ export const normalizeRoute = async (route, userLocation) => {
         })
 
         let prevDist = 0
-        route.waypoints.forEach((wp) => {
+        route.waypoints.forEach((wp, wpIndex) => {
             const dist = wp.distanceKm ? (wp.distanceKm * 1000) : 0
             const legDist = dist - prevDist
             prevDist = dist
 
+            // Map the RouteSummaryCard index (wpIndex + 1 since start is 0) to get any user-added metadata
+            const stopData = route.stops ? route.stops[wpIndex + 1] : {}
+
             stops.push({
                 ...wp,                    // spread first (wp.type like "scenic"/"rest" included)
+                ...stopData,              // Apply any user-added descriptions/photos
                 type: 'stop',             // override wp.type — always a stop, never a destination
                 name: wp.name,
                 details: wp.description || WAYPOINT_DESCRIPTIONS[wp.name] || null,

@@ -35,6 +35,8 @@ const RouteSummaryCard = ({
     const [expandedStop, setExpandedStop] = useState(null) // ID or index of expanded stop for enrichment
     const [normalizedStops, setNormalizedStops] = useState([])
     const [editingStops, setEditingStops] = useState([])
+    // Local state for stop descriptions so textarea stays editable
+    const [stopDescriptions, setStopDescriptions] = useState({})
 
     // Data Normalization Effect
     useEffect(() => {
@@ -210,8 +212,15 @@ const RouteSummaryCard = ({
                                     <div style={{ marginTop: 12, padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)' }}>
                                         <textarea
                                             placeholder="What's happening here? (e.g. Lunch break)"
-                                            value={stop.description || ''}
-                                            onChange={(e) => onStopUpdate && onStopUpdate(stop.index, { description: e.target.value })}
+                                            value={stopDescriptions[i] ?? (stop.description || '')}
+                                            onChange={(e) => {
+                                                const val = e.target.value
+                                                setStopDescriptions(prev => ({ ...prev, [i]: val }))
+                                            }}
+                                            onBlur={(e) => {
+                                                const val = e.target.value
+                                                if (onStopUpdate) onStopUpdate(stop.index ?? i, { description: val })
+                                            }}
                                             style={{
                                                 width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)',
                                                 borderRadius: 6, padding: 8, color: 'white', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', minHeight: 60

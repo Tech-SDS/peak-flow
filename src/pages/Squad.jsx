@@ -146,11 +146,25 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
     const [showExitConfirmation, setShowExitConfirmation] = useState(false)
     const [userLocation, setUserLocation] = useState(null)
     const [isEditingRoute, setIsEditingRoute] = useState(false)
-    const [upcomingConvoys, setUpcomingConvoys] = useState([...MOCK_GROUPS])
+    const [upcomingConvoys, setUpcomingConvoys] = useState(() => {
+        try {
+            const saved = localStorage.getItem('pf_upcomingConvoys')
+            if (saved) {
+                const parsed = JSON.parse(saved)
+                return parsed.length > 0 ? parsed : [...MOCK_GROUPS]
+            }
+        } catch (e) { }
+        return [...MOCK_GROUPS]
+    })
     const [pastConvoys, setPastConvoys] = useState([
         { id: 'p1', title: 'Midnight Run', image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=300', members: 8, date: '2 days ago' },
         { id: 'p2', title: 'Alpine Tour 2023', image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300', members: 12, date: '4 weeks ago' }
     ])
+
+    // Persist upcoming convoys to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem('pf_upcomingConvoys', JSON.stringify(upcomingConvoys))
+    }, [upcomingConvoys])
 
     useEffect(() => {
         if (navigator.geolocation) {

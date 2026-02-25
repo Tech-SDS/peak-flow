@@ -95,6 +95,12 @@ const MapEvents = ({ onMapMove, onMapClick, onManualPan }) => {
             // Distinguish between flyTo (programmatic) and user interaction
             // Leaflet doesn't always make this easy, but dragstart is reliable for mouse/touch drag.
             // We can primarily rely on dragstart.
+        },
+        zoomstart: () => {
+            if (onManualPan) onManualPan()
+        },
+        zoomend: () => {
+            if (onManualPan) onManualPan()
         }
     })
     return null
@@ -106,9 +112,18 @@ const RouteLayer = ({ routes, onRouteTap, selectedRouteId }) => {
     const [visibleRoutes, setVisibleRoutes] = useState([])
 
     const updateVisibleRoutes = useCallback(() => {
+        // Skip culling if there are only a few routes (e.g. during active navigation)
+        if (routes.length <= 5) {
+            setVisibleRoutes(routes)
+            return
+        }
+
         const bounds = map.getBounds()
         const visible = routes.filter(route => {
-            const points = route.path || (route.coordinates ? [route.coordinates.start, route.coordinates.end] : [])
+            let points = route.path || (route.coordinates ? [route.coordinates.start, route.coordinates.end] : [])
+            if (!points.length && route.waypoints) {
+                points = route.waypoints.map(wp => wp.coordinates || wp)
+            }
             if (!points.length) return false
             const paddedBounds = bounds.pad(0.5)
             return points.some(p => paddedBounds.contains([p.lat, p.lng]))
@@ -137,6 +152,8 @@ const RouteLayer = ({ routes, onRouteTap, selectedRouteId }) => {
 
                 if (route.path && Array.isArray(route.path)) {
                     waypoints = route.path
+                } else if (route.waypoints && Array.isArray(route.waypoints)) {
+                    waypoints = route.waypoints.map(wp => wp.coordinates || wp)
                 } else if (route.coordinates) {
                     waypoints = [
                         route.coordinates.start,
@@ -260,6 +277,7 @@ const MapContainerComponent = ({ routes = [], routeGeometry, flyToTarget, onRout
                     attribution={attribution}
                     subdomains={mapStyle === 'satellite' ? [] : "abcd"}
                     maxZoom={20}
+                    className={mapStyle === 'default' ? 'map-tiles-dark' : ''}
                 />
 
                 {/* Satellite Overlays: Roads & Labels */}

@@ -137,9 +137,11 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
     const [showNavControls, setShowNavControls] = useState(false)
     const [isNavOverview, setIsNavOverview] = useState(false)
     const navControlsTimer = React.useRef(null)
+    const lastInteractionTimeRef = React.useRef(0) // tracks last user map interaction time
 
     const handleMapInteraction = useCallback(() => {
         if (drivingMode) {
+            lastInteractionTimeRef.current = Date.now()
             setShowNavControls(true)
             if (navControlsTimer.current) clearTimeout(navControlsTimer.current)
             navControlsTimer.current = setTimeout(() => {
@@ -393,17 +395,21 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
         })
     }, [])
 
-    // Auto-zoom when driving mode starts and follow user if not panned
+    // Auto-zoom when driving mode starts and follow user if not interacting
     useEffect(() => {
         if (drivingMode && userLocation) {
-            setFlyToTarget({
-                lat: userLocation.lat,
-                lng: userLocation.lng,
-                zoom: 18, // Close-up for driving
-                pitch: 60, // Tilt for 3D effect
-                isDrivingTrack: true // Offset the marker to bottom 25% of screen
-            })
-            setShowRecenterBtn(false)
+            const timeSinceInteraction = Date.now() - lastInteractionTimeRef.current
+            // Only auto-recenter if user hasn't manually panned in the last 5 seconds
+            if (timeSinceInteraction >= 5000) {
+                setFlyToTarget({
+                    lat: userLocation.lat,
+                    lng: userLocation.lng,
+                    zoom: 18, // Close-up for driving
+                    pitch: 60, // Tilt for 3D effect
+                    isDrivingTrack: true // Offset the marker to bottom 25% of screen
+                })
+                setShowRecenterBtn(false)
+            }
         }
     }, [drivingMode, userLocation])
 
@@ -790,9 +796,7 @@ const Discover = ({ favorites, bucketList, onToggleFavorite, onToggleBucketList,
                         ? [detailRoute]
                         : selectedRoute?.isGenerated
                             ? [selectedRoute]
-                            : activeNavRoute
-                                ? []
-                                : filteredRoutes
+                            : filteredRoutes
                 }
                 flyToTarget={flyToTarget}
                 onRouteTap={handleRouteTap}
