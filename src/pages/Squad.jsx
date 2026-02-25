@@ -8,14 +8,39 @@ import { MOCK_ROUTES, MOCK_GROUPS } from '../lib/mockData'
 
 // ... Mock Data ...
 
+const getCurrentUser = () => {
+    const name = localStorage.getItem('pf_username') || 'Stefan S.'
+    // Extract first name and first initial of last name for username, or default to SDS15 for Stefan S.
+    const username = name === 'Stefan S.' ? '@SDS15' : `@${name.replace(/[^a-zA-Z]/g, '').toLowerCase()}`
+
+    let vehicle = 'Porsche 911 GT3'
+    try {
+        const garageStr = localStorage.getItem('pf_garage')
+        if (garageStr) {
+            const garage = JSON.parse(garageStr)
+            const activeCar = garage.find(c => c.active) || garage[0]
+            if (activeCar) vehicle = `${activeCar.make} ${activeCar.model}`
+        }
+    } catch (e) { }
+
+    return { id: 'u2', name, vehicle, username }
+}
+
 // ─── Convoy State Machine ───
 const MOCK_CONTACTS = [
-    { id: 'u2', name: localStorage.getItem('pf_username') || 'Stefan S.', vehicle: 'Porsche 911 GT3', username: '@user' },
-    { id: 'u3', name: 'Max T.', vehicle: 'BMW M4', username: '@max_t' },
-    { id: 'u4', name: 'Lisa R.', vehicle: 'Audi RS6', username: '@lisa_r' },
-    { id: 'u5', name: 'Tom W.', vehicle: 'Mercedes AMG GT', username: '@tom_w' },
-    { id: 'u6', name: 'Anna B.', vehicle: 'Porsche Cayman GT4', username: '@anna_b' },
-    { id: 'u7', name: 'Chris D.', vehicle: 'Nissan GT-R', username: '@chris_d' },
+    getCurrentUser(),
+    { id: 'u1', name: 'Yalcin', vehicle: 'McLaren 765LT', username: '@yalcin' },
+    { id: 'u2', name: 'Charlie', vehicle: 'McLaren Senna', username: '@charlie' },
+    { id: 'u3', name: 'Vadim', vehicle: 'Mercedes AMG GT', username: '@vadim' },
+    { id: 'u4', name: 'Sebastian', vehicle: 'McLaren P1', username: '@sebastian' },
+    { id: 'u5', name: 'John', vehicle: 'Nissan GT-R', username: '@john' },
+    { id: 'u6', name: 'Yongmin', vehicle: 'McLaren 600LT', username: '@yongmin' },
+    { id: 'u7', name: 'Olga', vehicle: 'Lamborghini Huracan', username: '@olga' },
+    { id: 'u8', name: 'Pep', vehicle: 'McLaren 720S', username: '@pep' },
+    { id: 'u9', name: 'Po-Wen', vehicle: 'McLaren Artura', username: '@powen' },
+    { id: 'u10', name: 'Inae', vehicle: 'Aston Martin Vantage', username: '@inae' },
+    { id: 'u11', name: 'Oliver', vehicle: 'McLaren GT', username: '@oliver' },
+    { id: 'u12', name: 'André', vehicle: 'Corvette Z06', username: '@andre' },
 ]
 const MOCK_USERS = MOCK_CONTACTS
 
@@ -42,15 +67,20 @@ function convoyReducer(state, action) {
                     title: '',
                     description: '',
                     coverImage: null,
-                    code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+                    code: typeof action.payload?.code === 'string' ? action.payload.code : Math.random().toString(36).substring(2, 8).toUpperCase(),
                     route: null,
-                    members: [{ ...MOCK_USERS[0], name: localStorage.getItem('pf_username') || 'Stefan S.' }],
+                    members: [getCurrentUser()],
                     schedule: 'instant', // 'instant' | ISO date string
                     gallery: [],
                     messages: [...INITIAL_MESSAGES],
                 }
             }
-        case 'JOIN_CONVOY':
+        case 'JOIN_CONVOY': {
+            const targetCount = action.payload?.memberCount || 2
+            const generatedMembers = [getCurrentUser()]
+            for (let i = 1; i < targetCount; i++) {
+                generatedMembers.push(MOCK_USERS[i % MOCK_USERS.length])
+            }
             return {
                 ...state,
                 phase: 'summary',
@@ -61,12 +91,13 @@ function convoyReducer(state, action) {
                     coverImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600',
                     code: action.payload?.code || '------',
                     route: action.payload?.route || null,
-                    members: [{ ...MOCK_USERS[0], name: localStorage.getItem('pf_username') || 'Stefan S.' }, MOCK_USERS[1]],
+                    members: generatedMembers,
                     schedule: 'instant',
                     gallery: [],
                     messages: [...INITIAL_MESSAGES],
                 }
             }
+        }
         case 'SET_TITLE':
             return { ...state, convoy: { ...state.convoy, title: action.payload } }
         case 'SET_DESCRIPTION':
@@ -467,7 +498,7 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                     {[...upcomingConvoys]
                         .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
                         .map(group => (
-                            <div key={group.id} onClick={() => dispatch({ type: 'JOIN_CONVOY', payload: { title: group.title, code: 'SAMPLE', route: group.route } })} className="glass-panel" style={{ display: 'flex', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s' }}
+                            <div key={group.id} onClick={() => dispatch({ type: 'JOIN_CONVOY', payload: { title: group.title, code: 'SAMPLE', route: group.route, memberCount: group.members } })} className="glass-panel" style={{ display: 'flex', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s' }}
                                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
                                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
                                 <div style={{ width: 90, height: 90, flexShrink: 0, overflow: 'hidden' }}>
@@ -510,7 +541,7 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                 <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'var(--text-muted)' }}>Past Convoys</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {pastConvoys.map(group => (
-                        <div key={group.id} onClick={() => dispatch({ type: 'JOIN_CONVOY', payload: { title: group.title, code: 'PAST', route: null } })}
+                        <div key={group.id} onClick={() => dispatch({ type: 'JOIN_CONVOY', payload: { title: group.title, code: 'PAST', route: null, memberCount: group.members } })}
                             className="glass-panel"
                             style={{ display: 'flex', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s', filter: 'grayscale(1)', opacity: 0.8 }}>
                             <div style={{ width: 90, height: 90, flexShrink: 0, overflow: 'hidden' }}>
@@ -687,7 +718,7 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                             </div>
                             <div style={{ maxHeight: 180, overflow: 'auto' }} className="no-scrollbar">
                                 {filteredContacts.map(contact => (
-                                    <div key={contact.id} onClick={() => { dispatch({ type: 'ADD_MEMBER', payload: { id: contact.id, name: contact.name, vehicle: contact.vehicle } }); setMemberSearch('') }}
+                                    <div key={contact.id} onClick={() => { dispatch({ type: 'ADD_MEMBER', payload: { id: contact.id, name: contact.name, vehicle: contact.vehicle, username: contact.username } }); setMemberSearch('') }}
                                         style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 4px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}
                                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                                         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
@@ -710,7 +741,7 @@ const Squad = ({ myRoutes = [], onConvoyChange, initialMembers = [], onClearInit
                                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: i === 0 ? 'linear-gradient(135deg, var(--primary-apex), #ff8f00)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>{user.name.charAt(0)}</div>
                                 <div style={{ flex: 1 }}>
                                     <p style={{ fontSize: 14, fontWeight: 600 }}>{user.name} {i === 0 && <span style={{ fontSize: 10, color: 'var(--primary-apex)', fontWeight: 700 }}>ADMIN</span>}</p>
-                                    <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{user.vehicle}</p>
+                                    <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{user.username ? `${user.username} · ` : ''}{user.vehicle}</p>
                                 </div>
                                 {i > 0 && <button onClick={() => dispatch({ type: 'REMOVE_MEMBER', payload: user.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,80,80,0.7)', cursor: 'pointer', padding: 4 }}><X size={14} /></button>}
                             </div>

@@ -408,9 +408,16 @@ export const MOCK_GROUPS = [
 
 // ─── Users ───
 export const MOCK_USERS = [
-    { id: 'u1', name: 'Stefan S.', vehicle: 'McLaren 720S', verified: true, avatar: null },
-    { id: 'u2', name: 'Jasper M.', vehicle: 'Porsche 911 GT3', verified: true, avatar: null },
-    { id: 'u3', name: 'Max T.', vehicle: 'BMW M4', verified: false, avatar: null },
-    { id: 'u4', name: 'Lisa R.', vehicle: 'Audi RS6', verified: true, avatar: null },
-    { id: 'u5', name: 'Tom W.', vehicle: 'Mercedes AMG GT', verified: true, avatar: null },
+    { id: 'u1', name: 'Yalcin', vehicle: 'McLaren 765LT', verified: true, avatar: null },
+    { id: 'u2', name: 'Charlie', vehicle: 'McLaren Senna', verified: true, avatar: null },
+    { id: 'u3', name: 'Vadim', vehicle: 'Mercedes AMG GT', verified: false, avatar: null },
+    { id: 'u4', name: 'Sebastian', vehicle: 'McLaren P1', verified: true, avatar: null },
+    { id: 'u5', name: 'John', vehicle: 'Nissan GT-R', verified: true, avatar: null },
+    { id: 'u6', name: 'Yongmin', vehicle: 'McLaren 600LT', verified: true, avatar: null },
+    { id: 'u7', name: 'Olga', vehicle: 'Lamborghini Huracan', verified: true, avatar: null },
+    { id: 'u8', name: 'Pep', vehicle: 'McLaren 720S', verified: false, avatar: null },
+    { id: 'u9', name: 'Po-Wen', vehicle: 'McLaren Artura', verified: true, avatar: null },
+    { id: 'u10', name: 'Inae', vehicle: 'Aston Martin Vantage', verified: true, avatar: null },
+    { id: 'u11', name: 'Oliver', vehicle: 'McLaren GT', verified: true, avatar: null },
+    { id: 'u12', name: 'André', vehicle: 'Corvette Z06', verified: true, avatar: null },
 ]
